@@ -1,0 +1,30 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:dataModel="clr-namespace:ArcadeShine.Common.DataModel;assembly=ArcadeShine.Common"
+        mc:Ignorable="d" d:DesignWidth="1080" d:DesignHeight="720"
+        Width="1080" Height="720"
+        x:Class="ArcadeShineManager.MainWindow"
+        Title="Arcade Shine Manager">
+    <Window.Background>
+        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Color="#CCEAF7" Offset="0.0"/>
+            <GradientStop Color="#FBD4FF" Offset="1.0"/>
+        </LinearGradientBrush>
+    </Window.Background>
+    <DockPanel VerticalAlignment="Stretch">
+        <TabStrip DockPanel.Dock="Top" x:Name="MenuBar"
+                  Theme="{StaticResource ButtonTabStrip}" 
+                  HorizontalAlignment="Center"
+                  Margin="15 15 0 0" Height="32" MaxHeight="32"
+                  SelectionChanged="OnTabChanged">
+            <TabStripItem Name="FrontendSettingsTabItem" MinWidth="180" HorizontalContentAlignment="Center" Content="Frontend Settings" />
+            <TabStripItem Name="GameSystemsTabItem" MinWidth="180" HorizontalContentAlignment="Center" Content="Game Systems" />
+            <TabStripItem Name="GamesTabItem" MinWidth="180" HorizontalContentAlignment="Center" Content="Games" />
+        </TabStrip>
+        <Border x:Name="TabContent" DockPanel.Dock="Bottom" Margin="25" Background="White" CornerRadius="15" 
+                VerticalAlignment="Stretch">
+        </Border>
+    </DockPanel>
+</Window>

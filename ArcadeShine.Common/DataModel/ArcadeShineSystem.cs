@@ -1,0 +1,19 @@
+// ArcadeShineSystem.cs
+// 
+// Author: Hecko @ Silversoft
+// Created at: 06/08/2025
+
+namespace ArcadeShine.Common.DataModel;
+
+public class ArcadeShineSystem
+{
+    public string SystemDisplayName { get; set; } = "System Display Name";
+    
+    public string SystemIdentifier { get; set; } = "SystemIdentifier";
+    
+    public string SystemGameLaunchFolder { get; set; } = "C:\\SystemGameLaunchFolder\\";
+    
+    public string SystemGameLaunchCommand { get; set; } = "system.exe -f -g \"{GAME_FILE}\"";
+    
+    public string SystemLogo { get; set; } = "GameSystemLogo.png";
+}

@@ -1,0 +1,73 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:dataModel="clr-namespace:ArcadeShine.Common.DataModel;assembly=ArcadeShine.Common"
+             mc:Ignorable="d" d:DesignWidth="1080" d:DesignHeight="640"
+             x:Class="ArcadeShineManager.TabViews.GameSystemsTabContent">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="10*"/>
+        </Grid.ColumnDefinitions>
+        <DockPanel Grid.Column="0">
+            <Button DockPanel.Dock="Bottom" Content="Add" Margin="15" HorizontalAlignment="Stretch"
+                    Click="AddSystemButton_OnClick"/>
+            <ListBox x:Name="GameSystemListBox" DockPanel.Dock="Top" Margin="0 25 0 0"
+                     x:DataType="dataModel:ArcadeShineSystem" SelectionChanged="GameSystemListBox_OnSelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding DataType=dataModel:ArcadeShineSystem, Path=SystemDisplayName}"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+        <DockPanel Grid.Column="1" HorizontalAlignment="Stretch" Margin="10" 
+                   VerticalAlignment="Stretch" x:Name="GameSystemDetailPanel">
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Save" Margin="5 0" Background="#BB99FF" 
+                        Width="100" Foreground="White" Click="SaveSystemButton_OnClick"/>
+                <Button Content="Delete" Margin="5 0" Background="#FF6666" 
+                        Width="100" Foreground="White" Click="DeleteSystemButton_OnClick"/>
+            </StackPanel>
+            <StackPanel DockPanel.Dock="Top" VerticalAlignment="Stretch" Orientation="Vertical">
+                <DockPanel Margin="10" HorizontalAlignment="Stretch">
+                    <TextBlock Text="System display name:" VerticalAlignment="Center" Width="220" />
+                    <TextBox x:Name="SystemDisplayNameTextBox" DockPanel.Dock="Right"
+                             Margin="15 0" 
+                             HorizontalAlignment="Stretch"/>
+                </DockPanel>
+                <DockPanel Margin="10" HorizontalAlignment="Stretch">
+                    <TextBlock Text="System unique identifier:" VerticalAlignment="Center" Width="220" />
+                    <TextBox x:Name="SystemIdentifierTextBox" TextChanged="SystemIdentifierTextBox_OnTextChanged"
+                             AcceptsReturn="False" AcceptsTab="False" DockPanel.Dock="Right"
+                             Margin="15 0" 
+                             HorizontalAlignment="Stretch"/>
+                </DockPanel>
+                <DockPanel Margin="10" HorizontalAlignment="Stretch">
+                    <TextBlock Text="System execution folder:" VerticalAlignment="Center" Width="220" />
+                    <Button Content="Browse" HorizontalAlignment="Right" DockPanel.Dock="Right"
+                            Margin="0 0 15 0" Click="BrowseSystemGameLaunchFolderButton_OnClick"/>
+                    <TextBox DockPanel.Dock="Right" x:Name="SystemGameLaunchFolderTextBox"
+                             Margin="15 0 5 0" 
+                             HorizontalAlignment="Stretch" />
+                </DockPanel>
+                <DockPanel Margin="10" HorizontalAlignment="Stretch">
+                    <TextBlock Text="System game launch command:" VerticalAlignment="Center" Width="220" />
+                    <TextBox x:Name="SystemGameLaunchCommandTextBox"
+                             Margin="15 0" 
+                             HorizontalAlignment="Stretch"/>
+                </DockPanel>
+                <DockPanel Margin="10" HorizontalAlignment="Stretch">
+                    <TextBlock Text="System logo:" VerticalAlignment="Center" Width="220" />
+                    <TextBox x:Name="SystemLogoFilename" Text="" IsVisible="False"/>
+                    <Button DockPanel.Dock="Right" HorizontalAlignment="Right"
+                            Margin="15 0" Click="PickSystemLogoButton_OnClick"
+                            Height="100" Width="100">
+                        <Image Height="100" Width="100" x:Name="SystemLogoImage" />
+                    </Button>
+                </DockPanel>
+            </StackPanel>
+        </DockPanel>
+    </Grid>
+</UserControl>

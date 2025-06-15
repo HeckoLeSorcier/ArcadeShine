@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArcadeShine", "ArcadeShine\ArcadeShine.csproj", "{3BD9E390-64AC-4FC5-A2FE-A260C09BBE5C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArcadeShineManager", "ArcadeShineManager\ArcadeShineManager.csproj", "{C962103C-DA26-4430-8CCF-D77C890B5287}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArcadeShine.Common", "ArcadeShine.Common\ArcadeShine.Common.csproj", "{463C0931-F5DF-4DA0-8355-03CABBA4B1AC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3BD9E390-64AC-4FC5-A2FE-A260C09BBE5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BD9E390-64AC-4FC5-A2FE-A260C09BBE5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BD9E390-64AC-4FC5-A2FE-A260C09BBE5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BD9E390-64AC-4FC5-A2FE-A260C09BBE5C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C962103C-DA26-4430-8CCF-D77C890B5287}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C962103C-DA26-4430-8CCF-D77C890B5287}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C962103C-DA26-4430-8CCF-D77C890B5287}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C962103C-DA26-4430-8CCF-D77C890B5287}.Release|Any CPU.Build.0 = Release|Any CPU
+		{463C0931-F5DF-4DA0-8355-03CABBA4B1AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{463C0931-F5DF-4DA0-8355-03CABBA4B1AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{463C0931-F5DF-4DA0-8355-03CABBA4B1AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{463C0931-F5DF-4DA0-8355-03CABBA4B1AC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

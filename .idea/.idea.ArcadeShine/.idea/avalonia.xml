@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AvaloniaProject">
+    <option name="projectPerEditor">
+      <map>
+        <entry key="ArcadeShine/App.axaml" value="ArcadeShine/ArcadeShine.csproj" />
+        <entry key="ArcadeShine/MainWindow.axaml" value="ArcadeShine/ArcadeShine.csproj" />
+        <entry key="ArcadeShineManager/App.axaml" value="ArcadeShineManager/ArcadeShineManager.csproj" />
+        <entry key="ArcadeShineManager/FrontendSettingsTabContent.axaml" value="ArcadeShineManager/ArcadeShineManager.csproj" />
+        <entry key="ArcadeShineManager/GameSystemsTabContent.axaml" value="ArcadeShineManager/ArcadeShineManager.csproj" />
+        <entry key="ArcadeShineManager/GamesTabContent.axaml" value="ArcadeShineManager/ArcadeShineManager.csproj" />
+        <entry key="ArcadeShineManager/MainWindow.axaml" value="ArcadeShineManager/ArcadeShineManager.csproj" />
+        <entry key="ArcadeShineManager/TabViews/FrontendSettingsTabContent.axaml" value="ArcadeShineManager/ArcadeShineManager.csproj" />
+        <entry key="ArcadeShineManager/TabViews/GameSystemsTabContent.axaml" value="ArcadeShineManager/ArcadeShineManager.csproj" />
+        <entry key="ArcadeShineManager/TabViews/GamesTabContent.axaml" value="ArcadeShineManager/ArcadeShineManager.csproj" />
+      </map>
+    </option>
+  </component>
+</project>

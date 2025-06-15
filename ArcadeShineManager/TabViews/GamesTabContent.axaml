@@ -1,0 +1,115 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:dataModel="clr-namespace:ArcadeShine.Common.DataModel;assembly=ArcadeShine.Common"
+             mc:Ignorable="d" d:DesignWidth="1080" d:DesignHeight="640"
+             x:Class="ArcadeShineManager.TabViews.GamesTabContent">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="10*"/>
+        </Grid.ColumnDefinitions>
+        <DockPanel Grid.Column="0">
+            <Button DockPanel.Dock="Bottom" Content="Add" Margin="15" HorizontalAlignment="Stretch"
+                    Click="AddGameButton_OnClick"/>
+            <ListBox x:Name="GameListBox" DockPanel.Dock="Top" Margin="0 25 0 0"
+                     x:DataType="dataModel:ArcadeShineGame" SelectionChanged="GameListBox_OnSelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding DataType=dataModel:ArcadeShineGame, Path=GameName}"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+        <ScrollViewer Grid.Column="1" HorizontalAlignment="Stretch" Margin="10" 
+                      VerticalAlignment="Stretch">
+            <DockPanel x:Name="GameDetailPanel">
+                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Save" Margin="5 0" Background="#BB99FF" 
+                            Width="100" Foreground="White" Click="SaveGameButton_OnClick"/>
+                    <Button Content="Delete" Margin="5 0" Background="#FF6666" 
+                            Width="100" Foreground="White" Click="DeleteGameButton_OnClick"/>
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Top" VerticalAlignment="Stretch" Orientation="Vertical">
+                    <DockPanel Margin="10" HorizontalAlignment="Stretch">
+                        <TextBlock Text="Game display name:" VerticalAlignment="Center" Width="220" />
+                        <TextBox x:Name="GameDisplayNameTextBox" DockPanel.Dock="Right"
+                                 Margin="15 0" 
+                                 HorizontalAlignment="Stretch"/>
+                    </DockPanel>
+                    <DockPanel Margin="10" HorizontalAlignment="Stretch">
+                        <TextBlock Text="Game ROM filename:" VerticalAlignment="Center" Width="220" />
+                        <TextBox x:Name="GameRomIdentifierTextBox"
+                                 AcceptsReturn="False" AcceptsTab="False" DockPanel.Dock="Right"
+                                 Margin="15 0" 
+                                 HorizontalAlignment="Stretch"/>
+                    </DockPanel>
+                    <DockPanel Margin="10" HorizontalAlignment="Stretch">
+                        <TextBlock Text="Game short description:" VerticalAlignment="Top" Width="220" />
+                        <TextBox x:Name="GameShortDescTextBox" Height="80" TextWrapping="Wrap" VerticalContentAlignment="Top"
+                                 AcceptsReturn="True" AcceptsTab="False" DockPanel.Dock="Right"
+                                 Margin="15 0" 
+                                 HorizontalAlignment="Stretch"/>
+                    </DockPanel>
+                    <DockPanel Margin="10" HorizontalAlignment="Stretch">
+                        <TextBlock Text="Game system:" VerticalAlignment="Center" Width="220" />
+                        <ComboBox MinWidth="250" x:Name="GameSystemComboBox" 
+                                  Margin="15 0"
+                                  HorizontalAlignment="Left">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DataType=dataModel:ArcadeShineSystem, Path=SystemDisplayName}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </DockPanel>
+                    <DockPanel Margin="10" HorizontalAlignment="Stretch">
+                        <TextBlock Text="Game logo:" VerticalAlignment="Top" Width="220" />
+                        <TextBox x:Name="GameLogoFilename" Text="" IsVisible="False"/>
+                        <Button DockPanel.Dock="Right" HorizontalAlignment="Right"
+                                Margin="15 0" Click="PickGameLogoButton_OnClick"
+                                Height="100" Width="100">
+                            <Image Height="100" Width="100" x:Name="GameLogoImage" />
+                        </Button>
+                    </DockPanel>
+                    <DockPanel Margin="10" HorizontalAlignment="Stretch">
+                        <TextBlock Text="Game background:" VerticalAlignment="Top" Width="220" />
+                        <TextBox x:Name="GameBackgroundFilename" Text="" IsVisible="False"/>
+                        <Button DockPanel.Dock="Right" HorizontalAlignment="Right"
+                                Margin="15 0" Click="PickGameBackgroundButton_OnClick"
+                                Height="100" Width="100">
+                            <Image Height="100" Width="100" x:Name="GameBackgroundImage" />
+                        </Button>
+                    </DockPanel>
+                    <DockPanel Margin="10" HorizontalAlignment="Stretch">
+                        <TextBlock Text="Game video:" VerticalAlignment="Center" Width="220" />
+                        <Button Content="Pick Video" HorizontalAlignment="Right" DockPanel.Dock="Right"
+                                Margin="0 0 15 0" Click="PickGameVideoButton_OnClick" />
+                        <TextBox DockPanel.Dock="Right" x:Name="GameVideoTextBox"
+                                 Margin="15 0 5 0" 
+                                 HorizontalAlignment="Stretch" />
+                    </DockPanel>
+                    <DockPanel Margin="10" HorizontalAlignment="Stretch">
+                        <TextBlock Text="Game release year:" VerticalAlignment="Center" Width="220" />
+                        <TextBox DockPanel.Dock="Right" x:Name="GameReleaseYearTextBox"
+                                 Margin="15 0 5 0" 
+                                 HorizontalAlignment="Stretch" />
+                    </DockPanel>
+                    <DockPanel Margin="10" HorizontalAlignment="Stretch">
+                        <TextBlock Text="Game developer:" VerticalAlignment="Center" Width="220" />
+                        <TextBox DockPanel.Dock="Right" x:Name="GameDeveloperTextBox"
+                                 Margin="15 0 5 0" 
+                                 HorizontalAlignment="Stretch" />
+                    </DockPanel>
+                    <DockPanel Margin="10" HorizontalAlignment="Stretch">
+                        <TextBlock Text="Game genres:" VerticalAlignment="Center" Width="220" />
+                        <TextBox DockPanel.Dock="Right" x:Name="GameGenresTextBox"
+                                 Margin="15 0 5 0" 
+                                 HorizontalAlignment="Stretch" />
+                    </DockPanel>
+                </StackPanel>
+            </DockPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

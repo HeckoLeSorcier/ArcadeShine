@@ -1,0 +1,84 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1080" d:DesignHeight="640"
+             x:Class="ArcadeShineManager.TabViews.FrontendSettingsTabContent">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <DockPanel Grid.Column="0" HorizontalAlignment="Stretch" Margin="10 0">
+            <StackPanel Orientation="Vertical">
+                <TextBlock HorizontalAlignment="Left" Text="General" FontWeight="Bold" Margin="0 25"/>
+                <DockPanel Margin="10" HorizontalAlignment="Stretch">
+                    <TextBlock Text="Frontend language:" VerticalAlignment="Center" />
+                    <ComboBox MinWidth="150" x:Name="FrontendLangComboBox" 
+                              Margin="15 0" SelectionChanged="OnChangeFrontedLanguage"
+                              HorizontalAlignment="Right">
+                        <ComboBoxItem Content="English"/>
+                        <ComboBoxItem Content="français"/>
+                    </ComboBox>
+                </DockPanel>
+                <DockPanel Margin="10">
+                    <CheckBox x:Name="PreserveLastSelectedGameCheckBox" Content="Preserve last selected game on exit"
+                              IsCheckedChanged="PreserveLastSelectedGameCheckBox_OnIsCheckedChanged"/> 
+                </DockPanel>
+                <DockPanel Margin="10" IsEnabled="{Binding !#PreserveLastSelectedGameCheckBox.IsChecked}">
+                    <TextBlock Text="Default selected game:" VerticalAlignment="Center"/>
+                    <ComboBox MinWidth="150" x:Name="DefaultSelectedGameComboBox" 
+                              Margin="15 0" SelectionChanged="OnChangeDefaultSelectedGame"
+                              HorizontalAlignment="Right">
+                    </ComboBox>
+                </DockPanel>
+            </StackPanel>
+        </DockPanel>
+        <DockPanel Grid.Column="1" HorizontalAlignment="Stretch" Margin="10 0">
+            <TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" TextAlignment="Left" Text="Input Mapping" FontWeight="Bold" Margin="0 25"/>
+            <DockPanel DockPanel.Dock="Top" Margin="15 10" HorizontalAlignment="Stretch">
+                <TextBlock Width="180" Text="Menu Up:" VerticalAlignment="Center" />
+                <Button MinWidth="150" x:Name="MenuUpButton"
+                          Margin="15 0"
+                          HorizontalAlignment="Left"/>
+            </DockPanel>
+            <DockPanel DockPanel.Dock="Top" Margin="15 10" HorizontalAlignment="Stretch">
+                <TextBlock Width="180" Text="Menu Down:" VerticalAlignment="Center" />
+                <Button MinWidth="150" x:Name="MenuDownButton"
+                        Margin="15 0"
+                        HorizontalAlignment="Left"/>
+            </DockPanel>
+            <DockPanel DockPanel.Dock="Top" Margin="15 10" HorizontalAlignment="Stretch">
+                <TextBlock Width="180" Text="Menu Left:" VerticalAlignment="Center" />
+                <Button MinWidth="150" x:Name="MenuLeftButton"
+                        Margin="15 0"
+                        HorizontalAlignment="Left"/>
+            </DockPanel>
+            <DockPanel DockPanel.Dock="Top" Margin="15 10" HorizontalAlignment="Stretch">
+                <TextBlock Width="180" Text="Menu Right:" VerticalAlignment="Center" />
+                <Button MinWidth="150" x:Name="MenuRightButton"
+                        Margin="15 0"
+                        HorizontalAlignment="Left"/>
+            </DockPanel>
+            <DockPanel DockPanel.Dock="Top" Margin="15 10" HorizontalAlignment="Stretch">
+                <TextBlock Width="180" Text="Menu Select:" VerticalAlignment="Center" />
+                <Button MinWidth="150" x:Name="MenuSelectButton"
+                        Margin="15 0"
+                        HorizontalAlignment="Left"/>
+            </DockPanel>
+            <DockPanel DockPanel.Dock="Top" Margin="15 10" HorizontalAlignment="Stretch">
+                <TextBlock Width="180" Text="Menu Back:" VerticalAlignment="Center" />
+                <Button MinWidth="150" x:Name="MenuBackButton"
+                        Margin="15 0"
+                        HorizontalAlignment="Left"/>
+            </DockPanel>
+            <DockPanel DockPanel.Dock="Top" Margin="15 10" HorizontalAlignment="Stretch">
+                <TextBlock Width="180" Text="Exit Game:" VerticalAlignment="Center" />
+                <Button MinWidth="150" x:Name="ExitGameButton"
+                        Margin="15 0"
+                        HorizontalAlignment="Left"/>
+            </DockPanel>
+            <TextBlock DockPanel.Dock="Top"/>
+        </DockPanel>
+    </Grid>
+</UserControl>

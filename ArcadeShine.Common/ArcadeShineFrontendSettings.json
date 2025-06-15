@@ -1,0 +1,13 @@
+{
+  "Language": "English",
+  "UpKey": "Up",
+  "DownKey": "Down",
+  "LeftKey": "Left",
+  "RightKey": "Right",
+  "EnterKey": "LeftCtrl",
+  "BackKey": "LeftAlt",
+  "ExitKey": "Escape",
+  "PreserveLastSelectedGameOnExit": false,
+  "LastSelectedGame": "",
+  "DefaultSelectedGame": ""
+}
