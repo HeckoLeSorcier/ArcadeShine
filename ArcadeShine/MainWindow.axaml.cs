@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ArcadeShine.Common;
+using ArcadeShine.Common.DataModel;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
@@ -26,33 +27,22 @@ public partial class MainWindow : Window
     
     private int _currentGameIndex = 0;
 
+    private List<ArcadeShineGame> _currentCategoryGames;
+
     public Dictionary<InputActionEnum, Key> InputActionMap = new Dictionary<InputActionEnum, Key>();
     
-    private Animation _animationLeftDisappear;
-    private Animation _animationLeftAppear;
-    private Animation _animationRightDisappear;
-    private Animation _animationRightAppear;
+    private Animation _animationCurrentSystemDisappearToLeftSide;
+    private Animation _animationNextSystemLogoAppearFromRightSide;
+    private Animation _animationCurrentSystemDisappearToRightSide;
+    private Animation _animationPreviousSystemAppearFromLeftSide;
     
     public MainWindow()
     {
         InitializeComponent();
         
         MapInputs();
-        
-        Bitmap gameBackground = new Bitmap(App.ArcadeShineGameList[0].GameBackgroundPicture);
-        GameBackground.Source = gameBackground;
-        
-        Bitmap gameLogo = new Bitmap(App.ArcadeShineGameList[0].GameLogo);
-        GameLogoImage.Source = gameLogo;
-        
-        ChangeCategory();
-        
-        GameDescriptionTextBlock.Text = App.ArcadeShineGameList[0].GameDescription;
-        if(App.ArcadeShineGameList[0].GameGenres != null && App.ArcadeShineGameList[0].GameGenres.Count > 0)
-            GameGenresTextBlock.Text = App.ArcadeShineGameList[0].GameGenres.Aggregate((a, b) => $"{a}, {b}");
-        GameDeveloperTextBlock.Text = App.ArcadeShineGameList[0].GameDeveloper;
-        GameYearTextBlock.Text = App.ArcadeShineGameList[0].GameReleaseYear;
-        GameNameTextBlock.Text = App.ArcadeShineGameList[0].GameName;
+        UpdateCategory();
+        UpdateGame();
         
         Loaded += OnLoaded;
         KeyDown += OnKeyDown;
@@ -97,17 +87,49 @@ public partial class MainWindow : Window
                     case InputActionEnum.NavigateLeftAction:
                         if (_previousCategoryAnimationTask is null or { IsCompleted: true })
                         {
+                            if (App.ArcadeShineSystemList.Count == 0)
+                            {
+                                _currentSystemIndex = 0;
+                            }
+                            else
+                            {
+                                if (_currentSystemIndex == 0)
+                                {
+                                    _currentSystemIndex = App.ArcadeShineSystemList.Count - 1;
+                                }
+                                else
+                                {
+                                    _currentSystemIndex--;
+                                }
+                            }
+
+                            UpdateCategory();
                             _previousCategoryAnimationTask = LaunchPreviousCategoryAnimations();
-                            _previousCategoryAnimationTask.ContinueWith(_ => App.ArcadeShineSystemList.Count==0?_currentSystemIndex=0:_currentSystemIndex==0?App.ArcadeShineSystemList.Count-1:_currentSystemIndex--)
-                                .ContinueWith(_ => ChangeCategory());
+                            _previousCategoryAnimationTask.ContinueWith(_ => UpdateGame());
                         }
                         break;
                     case InputActionEnum.NavigateRightAction:
                         if (_nextCategoryAnimationTask is null or { IsCompleted: true })
                         {
+                            if (App.ArcadeShineSystemList.Count == 0)
+                            {
+                                _currentSystemIndex = 0;
+                            }
+                            else
+                            {
+                                if (_currentSystemIndex == App.ArcadeShineSystemList.Count - 1)
+                                {
+                                    _currentSystemIndex = 0;
+                                }
+                                else
+                                {
+                                    _currentSystemIndex++;
+                                }
+                            }
+
+                            UpdateCategory();
                             _nextCategoryAnimationTask = LaunchNextCategoryAnimations();
-                            _nextCategoryAnimationTask.ContinueWith(_ => App.ArcadeShineSystemList.Count==0?_currentSystemIndex=0:_currentSystemIndex==App.ArcadeShineSystemList.Count-1?0:_currentSystemIndex++)
-                                .ContinueWith(_ => ChangeCategory());
+                            _nextCategoryAnimationTask.ContinueWith(_ => UpdateGame());
                         }
                         break;
                     case InputActionEnum.SelectAction:
@@ -123,20 +145,23 @@ public partial class MainWindow : Window
 
     private async Task LaunchNextCategoryAnimations()
     {
-        var animTask1 = _animationLeftDisappear.RunAsync(GameSystemLogoImage);
-        var animTask2 = _animationLeftAppear.RunAsync(NextGameSystemLogoImage);
+        var animTask1 = _animationCurrentSystemDisappearToLeftSide.RunAsync(PreviousGameSystemLogoImage);
+        var animTask2 = _animationNextSystemLogoAppearFromRightSide.RunAsync(CurrentGameSystemLogoImage);
         await Task.WhenAll(animTask1, animTask2);
     }
     
     private async Task LaunchPreviousCategoryAnimations()
     {
-        var animTask1 = _animationRightDisappear.RunAsync(GameSystemLogoImage);
-        var animTask2 = _animationRightAppear.RunAsync(PreviousGameSystemLogoImage);
+        var animTask1 = _animationCurrentSystemDisappearToRightSide.RunAsync(NextGameSystemLogoImage);
+        var animTask2 = _animationPreviousSystemAppearFromLeftSide.RunAsync(CurrentGameSystemLogoImage);
         await Task.WhenAll(animTask1, animTask2);
     }
 
-    private void ChangeCategory()
+    private void UpdateCategory()
     {
+        _currentCategoryGames = App.ArcadeShineGameList.FindAll(g =>
+            g.GameSystem == App.ArcadeShineSystemList[_currentSystemIndex].SystemIdentifier);
+        _currentGameIndex = 0;
         var previousIndex = _currentSystemIndex - 1;
         var nextIndex = _currentSystemIndex + 1;
         if (App.ArcadeShineSystemList.Count == 0)
@@ -150,95 +175,127 @@ public partial class MainWindow : Window
             if (_currentSystemIndex == App.ArcadeShineSystemList.Count - 1) nextIndex = 0;
         }
 
-        Bitmap nextGameSystemLogo = new Bitmap(App.ArcadeShineSystemList
-            .FirstOrDefault(s => s.SystemIdentifier == App.ArcadeShineGameList[nextIndex].GameSystem).SystemLogo);
-        Bitmap previousGameSystemLogo = new Bitmap(App.ArcadeShineSystemList
-            .FirstOrDefault(s => s.SystemIdentifier == App.ArcadeShineGameList[previousIndex].GameSystem).SystemLogo);
-        Bitmap currentGameSystemLogo = new Bitmap(App.ArcadeShineSystemList
-            .FirstOrDefault(s => s.SystemIdentifier == App.ArcadeShineGameList[_currentSystemIndex].GameSystem).SystemLogo);
+        Bitmap previousGameSystemLogo = new Bitmap(App.ArcadeShineSystemList[previousIndex].SystemLogo);
+        Bitmap currentGameSystemLogo = new Bitmap(App.ArcadeShineSystemList[_currentSystemIndex].SystemLogo);
+        Bitmap nextGameSystemLogo = new Bitmap(App.ArcadeShineSystemList[nextIndex].SystemLogo);
         Dispatcher.UIThread.Invoke(() =>
         {
-            GameSystemLogoImage.Source = currentGameSystemLogo;
+            CurrentGameSystemLogoImage.Source = currentGameSystemLogo;
             NextGameSystemLogoImage.Source = nextGameSystemLogo;
             PreviousGameSystemLogoImage.Source = previousGameSystemLogo;
+        });
+    }
+
+    private void UpdateGame()
+    {
+        CancelVideoPlay();
+        var previousIndex = _currentGameIndex - 1;
+        var nextIndex = _currentGameIndex + 1;
+        if (_currentCategoryGames.Count == 0)
+        {
+            previousIndex = 0;
+            nextIndex = 0;
+        }
+        else
+        {
+            if (_currentGameIndex == 0) previousIndex = _currentCategoryGames.Count - 1;
+            if (_currentGameIndex == _currentCategoryGames.Count - 1) nextIndex = 0;
+        }
+
+        Bitmap previousGameLogo = new Bitmap(_currentCategoryGames[previousIndex].GameLogo);
+        Bitmap currentGameLogo = new Bitmap(_currentCategoryGames[_currentGameIndex].GameLogo);
+        Bitmap nextGameLogo = new Bitmap(_currentCategoryGames[nextIndex].GameLogo);
+        Bitmap gameBackground = new Bitmap(_currentCategoryGames[_currentGameIndex].GameBackgroundPicture);
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            CurrentGameLogoImage.Source = currentGameLogo;
+            NextGameLogoImage.Source = nextGameLogo;
+            PreviousGameLogoImage.Source = previousGameLogo;
+            GameBackground.Source = gameBackground;
+            GameDescriptionTextBlock.Text = _currentCategoryGames[_currentGameIndex].GameDescription;
+            if(_currentCategoryGames[_currentGameIndex].GameGenres != null && _currentCategoryGames[_currentGameIndex].GameGenres.Count > 0)
+                GameGenresTextBlock.Text = _currentCategoryGames[_currentGameIndex].GameGenres.Aggregate((a, b) => $"{a}, {b}");
+            GameDeveloperTextBlock.Text = _currentCategoryGames[_currentGameIndex].GameDeveloper;
+            GameYearTextBlock.Text = _currentCategoryGames[_currentGameIndex].GameReleaseYear;
+            GameNameTextBlock.Text = _currentCategoryGames[_currentGameIndex].GameName;
+            if(!Design.IsDesignMode)
+                Task.Delay(TimeSpan.FromSeconds(1)).ContinueWith(_ => Play());
         });
     }
 
     private void OnLoaded(object? sender, RoutedEventArgs e)
     {
         GenerateAnimations();
-        if(!Design.IsDesignMode)
-            Task.Delay(TimeSpan.FromSeconds(3)).ContinueWith(_ => Play());
     }
 
     private void GenerateAnimations()
     {
         //Move and disappear on the left side
-        _animationLeftDisappear = new Animation
+        _animationCurrentSystemDisappearToLeftSide = new Animation
         {
             Duration = TimeSpan.FromSeconds(0.3),
             Easing = new QuarticEaseInOut()
         };
-        _animationLeftDisappear.Children.Add(new KeyFrame()
+        _animationCurrentSystemDisappearToLeftSide.Children.Add(new KeyFrame()
         {
             Cue = new Cue(0.0),
-            Setters = { new Setter(OpacityProperty, 1.0), new Setter(TranslateTransform.XProperty, 0.0) }
+            Setters = { new Setter(OpacityProperty, 1.0), new Setter(TranslateTransform.XProperty, 480.0) }
         });
-        _animationLeftDisappear.Children.Add(new KeyFrame()
+        _animationCurrentSystemDisappearToLeftSide.Children.Add(new KeyFrame()
         {
             Cue = new Cue(1.0),
-            Setters = { new Setter(OpacityProperty, 0.0), new Setter(TranslateTransform.XProperty, -480.0) }
+            Setters = { new Setter(OpacityProperty, 0.0), new Setter(TranslateTransform.XProperty, 0.0) }
         });
         
         //Move and appear from the left side
-        _animationLeftAppear = new Animation
+        _animationNextSystemLogoAppearFromRightSide = new Animation
         {
             Duration = TimeSpan.FromSeconds(0.3),
             Easing = new QuarticEaseInOut()
         };
-        _animationLeftAppear.Children.Add(new KeyFrame()
+        _animationNextSystemLogoAppearFromRightSide.Children.Add(new KeyFrame()
         {
             Cue = new Cue(0.0),
-            Setters = { new Setter(OpacityProperty, 0.0), new Setter(TranslateTransform.XProperty, 0.0) }
+            Setters = { new Setter(OpacityProperty, 0.0), new Setter(TranslateTransform.XProperty, 480.0) }
         });
-        _animationLeftAppear.Children.Add(new KeyFrame()
+        _animationNextSystemLogoAppearFromRightSide.Children.Add(new KeyFrame()
         {
             Cue = new Cue(1.0),
-            Setters = { new Setter(OpacityProperty, 1.0), new Setter(TranslateTransform.XProperty, -480.0) }
+            Setters = { new Setter(OpacityProperty, 1.0), new Setter(TranslateTransform.XProperty, 0.0) }
         });
         
         //Move and disappear on the right side
-        _animationRightDisappear = new Animation
+        _animationCurrentSystemDisappearToRightSide = new Animation
         {
             Duration = TimeSpan.FromSeconds(0.3),
             Easing = new QuarticEaseInOut()
         };
-        _animationRightDisappear.Children.Add(new KeyFrame()
+        _animationCurrentSystemDisappearToRightSide.Children.Add(new KeyFrame()
         {
             Cue = new Cue(0.0),
-            Setters = { new Setter(OpacityProperty, 1.0), new Setter(TranslateTransform.XProperty, 0.0) }
+            Setters = { new Setter(OpacityProperty, 1.0), new Setter(TranslateTransform.XProperty, -480.0) }
         });
-        _animationRightDisappear.Children.Add(new KeyFrame()
+        _animationCurrentSystemDisappearToRightSide.Children.Add(new KeyFrame()
         {
             Cue = new Cue(1.0),
-            Setters = { new Setter(OpacityProperty, 0.0), new Setter(TranslateTransform.XProperty, 480.0) }
+            Setters = { new Setter(OpacityProperty, 0.0), new Setter(TranslateTransform.XProperty, 0.0) }
         });
         
         //Move and appear from the right side
-        _animationRightAppear = new Animation
+        _animationPreviousSystemAppearFromLeftSide = new Animation
         {
             Duration = TimeSpan.FromSeconds(0.3),
             Easing = new QuarticEaseInOut()
         };
-        _animationRightAppear.Children.Add(new KeyFrame()
+        _animationPreviousSystemAppearFromLeftSide.Children.Add(new KeyFrame()
         {
             Cue = new Cue(0.0),
-            Setters = { new Setter(OpacityProperty, 0.0), new Setter(TranslateTransform.XProperty, 0.0) }
+            Setters = { new Setter(OpacityProperty, 0.0), new Setter(TranslateTransform.XProperty, -480.0) }
         });
-        _animationRightAppear.Children.Add(new KeyFrame()
+        _animationPreviousSystemAppearFromLeftSide.Children.Add(new KeyFrame()
         {
             Cue = new Cue(1.0),
-            Setters = { new Setter(OpacityProperty, 1.0), new Setter(TranslateTransform.XProperty, 480.0) }
+            Setters = { new Setter(OpacityProperty, 1.0), new Setter(TranslateTransform.XProperty, 0.0) }
         });
     }
 
@@ -258,23 +315,25 @@ public partial class MainWindow : Window
 
     private void MediaPlayerOnEndReached(object? sender, EventArgs e)
     {
+        VideoView.MediaPlayer?.Stop();
         VideoView.MediaPlayer.Position = 0f;
         PlayCurrentGameVideo();
     }
 
     private void PlayCurrentGameVideo()
     {
-        using var media = new Media(_libVlc, App.ArcadeShineGameList[0].GameVideo);
+        using var media = new Media(_libVlc, _currentCategoryGames[_currentGameIndex].GameVideo);
         VideoView.MediaPlayer?.Play(media);
     }
 
-    public void Stop()
-    {            
+    private void CancelVideoPlay()
+    {
         VideoView.MediaPlayer?.Stop();
     }
    
     public void Dispose()
     {
+        CancelVideoPlay();
         VideoView.MediaPlayer?.Dispose();
         _libVlc?.Dispose();
     }

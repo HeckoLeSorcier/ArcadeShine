@@ -36,7 +36,7 @@
                     </Image.Effect>
                 </Image>
                 <Image Height="192" Width="480" MaxWidth="480" 
-                       x:Name="GameSystemLogoImage">
+                       x:Name="CurrentGameSystemLogoImage">
                     <Image.Effect>
                         <DropShadowEffect OffsetX="0"
                                           OffsetY="0"
@@ -115,7 +115,7 @@
             <Grid Grid.Column="1" Grid.Row="1" VerticalAlignment="Stretch" Background="Transparent">
                 <StackPanel Background="Transparent" Orientation="Vertical"
                             VerticalAlignment="Top">
-                    <Image Height="192"
+                    <Image Height="192" x:Name="PreviousGameLogoImage"
                            Opacity="0.0">
                         <Image.Effect>
                             <DropShadowEffect OffsetX="0"
@@ -124,7 +124,7 @@
                                               Opacity="0.5"/>
                         </Image.Effect>
                     </Image>
-                    <Image Height="192" x:Name="GameLogoImage">
+                    <Image Height="192" x:Name="CurrentGameLogoImage">
                         <Image.Effect>
                             <DropShadowEffect OffsetX="0"
                                               OffsetY="0"
@@ -132,7 +132,7 @@
                                               Opacity="0.5"/>
                         </Image.Effect>
                     </Image>
-                    <Image Height="192" 
+                    <Image Height="192" x:Name="NextGameLogoImage"
                            Opacity="0.0">
                         <Image.Effect>
                             <DropShadowEffect OffsetX="0"
