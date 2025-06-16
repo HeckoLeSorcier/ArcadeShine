@@ -26,4 +26,6 @@ public class ArcadeShineGame
     public string GameBackgroundPicture { get; set; } = "";
     
     public string GameVideo { get; set; } = "";
+    
+    public string GameVideoAspectRatio { get; set; } = "";
 }

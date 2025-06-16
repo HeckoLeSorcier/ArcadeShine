@@ -36,6 +36,18 @@ public partial class MainWindow : Window
     private Animation _animationCurrentSystemDisappearToRightSide;
     private Animation _animationPreviousSystemAppearFromLeftSide;
     
+    private Task _nextCategoryAnimationTask;
+    private Task _previousCategoryAnimationTask;
+    
+    private Animation _animationCurrentGameDisappearToUpSide;
+    private Animation _animationNextGameLogoAppearFromBottomSide;
+    private Animation _animationCurrentGameDisappearToBottomSide;
+    private Animation _animationPreviousGameAppearFromUpSide;
+    
+    private Task _nextGameAnimationTask;
+    private Task _previousGameAnimationTask;
+    private Media _currentVideoMedia;
+    
     public MainWindow()
     {
         InitializeComponent();
@@ -58,9 +70,6 @@ public partial class MainWindow : Window
         InputActionMap.Add(InputActionEnum.BackAction, (Key)Enum.Parse(typeof(Key), App.ArcadeShineFrontendSettings.BackKey));
         InputActionMap.Add(InputActionEnum.ExitAction, (Key)Enum.Parse(typeof(Key), App.ArcadeShineFrontendSettings.ExitKey));
     }
-
-    private Task _nextCategoryAnimationTask;
-    private Task _previousCategoryAnimationTask;
     
     private async void OnKeyDown(object? sender, KeyEventArgs e)
     {
@@ -81,8 +90,50 @@ public partial class MainWindow : Window
                 switch (action)
                 {
                     case InputActionEnum.NavigateUpAction:
+                        if (_previousGameAnimationTask is null or { IsCompleted: true })
+                        {
+                            if (_currentCategoryGames.Count == 0)
+                            {
+                                _currentGameIndex = 0;
+                            }
+                            else
+                            {
+                                if (_currentGameIndex == 0)
+                                {
+                                    _currentGameIndex = _currentCategoryGames.Count - 1;
+                                }
+                                else
+                                {
+                                    _currentGameIndex--;
+                                }
+                            }
+
+                            UpdateGame();
+                            _previousGameAnimationTask = LaunchPreviousGameAnimations();
+                        }
                         break;
                     case InputActionEnum.NavigateDownAction:
+                        if (_nextGameAnimationTask is null or { IsCompleted: true })
+                        {
+                            if (_currentCategoryGames.Count == 0)
+                            {
+                                _currentGameIndex = 0;
+                            }
+                            else
+                            {
+                                if (_currentGameIndex == _currentCategoryGames.Count - 1)
+                                {
+                                    _currentGameIndex = 0;
+                                }
+                                else
+                                {
+                                    _currentGameIndex++;
+                                }
+                            }
+
+                            UpdateGame();
+                            _nextGameAnimationTask = LaunchNextGameAnimations();
+                        }
                         break;
                     case InputActionEnum.NavigateLeftAction:
                         if (_previousCategoryAnimationTask is null or { IsCompleted: true })
@@ -154,6 +205,20 @@ public partial class MainWindow : Window
     {
         var animTask1 = _animationCurrentSystemDisappearToRightSide.RunAsync(NextGameSystemLogoImage);
         var animTask2 = _animationPreviousSystemAppearFromLeftSide.RunAsync(CurrentGameSystemLogoImage);
+        await Task.WhenAll(animTask1, animTask2);
+    }
+    
+    private async Task LaunchNextGameAnimations()
+    {
+        var animTask1 = _animationCurrentGameDisappearToUpSide.RunAsync(PreviousGameLogoImage);
+        var animTask2 = _animationNextGameLogoAppearFromBottomSide.RunAsync(CurrentGameLogoImage);
+        await Task.WhenAll(animTask1, animTask2);
+    }
+    
+    private async Task LaunchPreviousGameAnimations()
+    {
+        var animTask1 = _animationCurrentGameDisappearToBottomSide.RunAsync(NextGameLogoImage);
+        var animTask2 = _animationPreviousGameAppearFromUpSide.RunAsync(CurrentGameLogoImage);
         await Task.WhenAll(animTask1, animTask2);
     }
 
@@ -230,6 +295,7 @@ public partial class MainWindow : Window
 
     private void GenerateAnimations()
     {
+        // CATEGORY ANIMATIONS
         //Move and disappear on the left side
         _animationCurrentSystemDisappearToLeftSide = new Animation
         {
@@ -297,6 +363,76 @@ public partial class MainWindow : Window
             Cue = new Cue(1.0),
             Setters = { new Setter(OpacityProperty, 1.0), new Setter(TranslateTransform.XProperty, 0.0) }
         });
+        
+        
+        // GAME ANIMATIONS
+        //Move and disappear on the up side
+        _animationCurrentGameDisappearToUpSide = new Animation
+        {
+            Duration = TimeSpan.FromSeconds(0.3),
+            Easing = new QuarticEaseInOut()
+        };
+        _animationCurrentGameDisappearToUpSide.Children.Add(new KeyFrame()
+        {
+            Cue = new Cue(0.0),
+            Setters = { new Setter(OpacityProperty, 1.0), new Setter(TranslateTransform.YProperty, 192.0) }
+        });
+        _animationCurrentGameDisappearToUpSide.Children.Add(new KeyFrame()
+        {
+            Cue = new Cue(1.0),
+            Setters = { new Setter(OpacityProperty, 0.0), new Setter(TranslateTransform.YProperty, 0.0) }
+        });
+        
+        //Move and appear from the bottom side
+        _animationNextGameLogoAppearFromBottomSide = new Animation
+        {
+            Duration = TimeSpan.FromSeconds(0.3),
+            Easing = new QuarticEaseInOut()
+        };
+        _animationNextGameLogoAppearFromBottomSide.Children.Add(new KeyFrame()
+        {
+            Cue = new Cue(0.0),
+            Setters = { new Setter(OpacityProperty, 0.0), new Setter(TranslateTransform.YProperty, 192.0) }
+        });
+        _animationNextGameLogoAppearFromBottomSide.Children.Add(new KeyFrame()
+        {
+            Cue = new Cue(1.0),
+            Setters = { new Setter(OpacityProperty, 1.0), new Setter(TranslateTransform.YProperty, 0.0) }
+        });
+        
+        //Move and disappear on the bottom side
+        _animationCurrentGameDisappearToBottomSide = new Animation
+        {
+            Duration = TimeSpan.FromSeconds(0.3),
+            Easing = new QuarticEaseInOut()
+        };
+        _animationCurrentGameDisappearToBottomSide.Children.Add(new KeyFrame()
+        {
+            Cue = new Cue(0.0),
+            Setters = { new Setter(OpacityProperty, 1.0), new Setter(TranslateTransform.YProperty, -192.0) }
+        });
+        _animationCurrentGameDisappearToBottomSide.Children.Add(new KeyFrame()
+        {
+            Cue = new Cue(1.0),
+            Setters = { new Setter(OpacityProperty, 0.0), new Setter(TranslateTransform.YProperty, 0.0) }
+        });
+        
+        //Move and appear from the up side
+        _animationPreviousGameAppearFromUpSide = new Animation
+        {
+            Duration = TimeSpan.FromSeconds(0.3),
+            Easing = new QuarticEaseInOut()
+        };
+        _animationPreviousGameAppearFromUpSide.Children.Add(new KeyFrame()
+        {
+            Cue = new Cue(0.0),
+            Setters = { new Setter(OpacityProperty, 0.0), new Setter(TranslateTransform.YProperty, -192.0) }
+        });
+        _animationPreviousGameAppearFromUpSide.Children.Add(new KeyFrame()
+        {
+            Cue = new Cue(1.0),
+            Setters = { new Setter(OpacityProperty, 1.0), new Setter(TranslateTransform.YProperty, 0.0) }
+        });
     }
 
     public void Play()
@@ -305,9 +441,13 @@ public partial class MainWindow : Window
         {
             return;
         }
-        
+
+        if (VideoView.MediaPlayer is { IsPlaying: true })
+        {
+            VideoView.MediaPlayer.Stop();
+        }
         VideoView.MediaPlayer = new MediaPlayer(_libVlc);
-        VideoView.MediaPlayer.CropGeometry = "16:9";
+        VideoView.MediaPlayer.CropGeometry = _currentCategoryGames[_currentGameIndex].GameVideoAspectRatio;
         VideoView.MediaPlayer.EnableHardwareDecoding = true;
         VideoView.MediaPlayer.EndReached += MediaPlayerOnEndReached;
         PlayCurrentGameVideo();
@@ -315,15 +455,13 @@ public partial class MainWindow : Window
 
     private void MediaPlayerOnEndReached(object? sender, EventArgs e)
     {
-        VideoView.MediaPlayer?.Stop();
-        VideoView.MediaPlayer.Position = 0f;
-        PlayCurrentGameVideo();
+        ThreadPool.QueueUserWorkItem(_ => VideoView.MediaPlayer.Play(_currentVideoMedia));
     }
 
     private void PlayCurrentGameVideo()
     {
-        using var media = new Media(_libVlc, _currentCategoryGames[_currentGameIndex].GameVideo);
-        VideoView.MediaPlayer?.Play(media);
+        _currentVideoMedia = new Media(_libVlc, _currentCategoryGames[_currentGameIndex].GameVideo);
+        ThreadPool.QueueUserWorkItem(_ => VideoView.MediaPlayer?.Play(_currentVideoMedia));
     }
 
     private void CancelVideoPlay()

@@ -37,6 +37,18 @@ public partial class GamesTabContent : UserControl
         var item = GameSystemComboBox.Items.FirstOrDefault(s => ((ArcadeShineSystem)s).SystemIdentifier == systemIdentifier);
         if(item != null)
             GameSystemComboBox.SelectedItem = item;
+        switch (game.GameVideoAspectRatio)
+        {
+            case "16:9":
+                GameVideoAspectRatioComboBox.SelectedIndex = 0;
+                break;
+            case "4:3":
+                GameVideoAspectRatioComboBox.SelectedIndex = 1;
+                break;
+            default:
+                GameVideoAspectRatioComboBox.SelectedIndex = 0;
+                break;           
+        }
         
         try
         {
@@ -96,6 +108,18 @@ public partial class GamesTabContent : UserControl
         game.GameLogo = GameLogoFilename.Text!;
         game.GameBackgroundPicture = GameBackgroundFilename.Text!;
         game.GameVideo = GameVideoTextBox.Text!;
+        switch (GameVideoAspectRatioComboBox.SelectedIndex)
+        {
+            case 0:
+                game.GameVideoAspectRatio = "16:9";
+                break;
+            case 1:
+                game.GameVideoAspectRatio = "4:3";
+                break;
+            default:
+                game.GameVideoAspectRatio = "16:9";
+                break;           
+        }
         game.GameReleaseYear = GameReleaseYearTextBox.Text!;
         game.GameDeveloper = GameDeveloperTextBox.Text!;
         game.GameGenres = GameGenresTextBox.Text.Replace(" ", string.Empty).Split(',').ToList();

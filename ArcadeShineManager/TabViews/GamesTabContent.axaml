@@ -91,6 +91,15 @@
                                  HorizontalAlignment="Stretch" />
                     </DockPanel>
                     <DockPanel Margin="10" HorizontalAlignment="Stretch">
+                        <TextBlock Text="Game video aspect ratio:" VerticalAlignment="Center" Width="220" />
+                        <ComboBox MinWidth="250" x:Name="GameVideoAspectRatioComboBox" 
+                                  Margin="15 0"
+                                  HorizontalAlignment="Left">
+                            <ComboBoxItem Content="16:9"/>
+                            <ComboBoxItem Content="4:3"/>
+                        </ComboBox>
+                    </DockPanel>
+                    <DockPanel Margin="10" HorizontalAlignment="Stretch">
                         <TextBlock Text="Game release year:" VerticalAlignment="Center" Width="220" />
                         <TextBox DockPanel.Dock="Right" x:Name="GameReleaseYearTextBox"
                                  Margin="15 0 5 0" 

@@ -8,7 +8,7 @@
         x:Class="ArcadeShine.MainWindow"
         Title="Arcade Shine" WindowState="FullScreen">
     <Panel x:Name="RootPanel">
-        <Image x:Name="GameBackground">
+        <Image x:Name="GameBackground" Stretch="UniformToFill">
             <Image.Effect>
                 <BlurEffect Radius="48"/>
             </Image.Effect>
@@ -207,10 +207,10 @@
                         </TextBlock>
                     </StackPanel>
                 </StackPanel>
-                <Border DockPanel.Dock="Top" CornerRadius="15" Background="Black"
-                        BorderThickness="2" BorderBrush="Black" Margin="50 0 0 0"
+                <Border DockPanel.Dock="Top" CornerRadius="15" Background="Transparent"
+                        BorderThickness="2" BorderBrush="Transparent" Margin="50 0 0 0"
                         VerticalAlignment="Stretch">
-                    <avalonia:VideoView x:Name="VideoView" Margin="25" VerticalAlignment="Stretch"/>
+                    <avalonia:VideoView x:Name="VideoView" Margin="34 25" VerticalAlignment="Stretch"/>
                 </Border>
             </DockPanel>
         </Grid>
