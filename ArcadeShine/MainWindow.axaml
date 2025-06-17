@@ -23,6 +23,86 @@
                 <ColumnDefinition Width="31*"></ColumnDefinition>
                 <ColumnDefinition Width="20*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
+            <Image Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Source="Assets/double-arrows.png" Height="64" Width="64" ZIndex="-1"
+                   Margin="700 0 0 0" Classes="moveRight">
+                <Image.Styles>
+                    <Style Selector="Image.moveRight">
+                        <Style.Animations>
+                            <Animation Duration="0:0:8" IterationCount="INFINITE" >
+                                <KeyFrame Cue="0%">
+                                    <Setter Property="Opacity" Value="0.0"/>
+                                    <Setter Property="TranslateTransform.X" Value="0"/>
+                                </KeyFrame>
+                                <KeyFrame Cue="25%">
+                                    <Setter Property="Opacity" Value="0.0"/>
+                                    <Setter Property="TranslateTransform.X" Value="0"/>
+                                </KeyFrame>
+                                <KeyFrame Cue="25%">
+                                    <Setter Property="Opacity" Value="1.0"/>
+                                    <Setter Property="TranslateTransform.X" Value="0.0"/>
+                                </KeyFrame>
+                                <KeyFrame Cue="37.5%">
+                                    <Setter Property="Opacity" Value="0.0"/>
+                                    <Setter Property="TranslateTransform.X" Value="40"/>
+                                </KeyFrame>
+                                <KeyFrame Cue="37.5%">
+                                    <Setter Property="Opacity" Value="1.0"/>
+                                    <Setter Property="TranslateTransform.X" Value="0.0"/>
+                                </KeyFrame>
+                                <KeyFrame Cue="50%">
+                                    <Setter Property="Opacity" Value="0.0"/>
+                                    <Setter Property="TranslateTransform.X" Value="40"/>
+                                </KeyFrame>
+                                <KeyFrame Cue="100%">
+                                    <Setter Property="Opacity" Value="0.0"/>
+                                    <Setter Property="TranslateTransform.X" Value="40"/>
+                                </KeyFrame>
+                            </Animation> 
+                        </Style.Animations>
+                    </Style>
+                </Image.Styles>
+            </Image>
+            <Image Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Source="Assets/double-arrows.png" Height="64" Width="64" ZIndex="-1"
+                   Margin="-700 0 0 0" Classes="moveLeft">
+                <Image.Styles>
+                    <Style Selector="Image.moveLeft">
+                        <Style.Animations>
+                            <Animation Duration="0:0:8" IterationCount="INFINITE" >
+                                <KeyFrame Cue="0%">
+                                    <Setter Property="RotateTransform.Angle" Value="180.0"/> 
+                                    <Setter Property="Opacity" Value="0.0"/>
+                                    <Setter Property="TranslateTransform.X" Value="0"/>
+                                </KeyFrame>
+                                <KeyFrame Cue="25%">
+                                    <Setter Property="Opacity" Value="0.0"/>
+                                    <Setter Property="TranslateTransform.X" Value="0"/>
+                                </KeyFrame>
+                                <KeyFrame Cue="25%">
+                                    <Setter Property="Opacity" Value="1.0"/>
+                                    <Setter Property="TranslateTransform.X" Value="0.0"/>
+                                </KeyFrame>
+                                <KeyFrame Cue="37.5%">
+                                    <Setter Property="Opacity" Value="0.0"/>
+                                    <Setter Property="TranslateTransform.X" Value="-40"/>
+                                </KeyFrame>
+                                <KeyFrame Cue="37.5%">
+                                    <Setter Property="Opacity" Value="1.0"/>
+                                    <Setter Property="TranslateTransform.X" Value="0.0"/>
+                                </KeyFrame>
+                                <KeyFrame Cue="50%">
+                                    <Setter Property="Opacity" Value="0.0"/>
+                                    <Setter Property="TranslateTransform.X" Value="-40"/>
+                                </KeyFrame>
+                                <KeyFrame Cue="100%">
+                                    <Setter Property="RotateTransform.Angle" Value="180.0"/> 
+                                    <Setter Property="Opacity" Value="0.0"/>
+                                    <Setter Property="TranslateTransform.X" Value="-40"/>
+                                </KeyFrame>
+                            </Animation> 
+                        </Style.Animations>
+                    </Style>
+                </Image.Styles>
+            </Image>
             <StackPanel Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Background="Transparent" 
                         Orientation="Horizontal"
                         HorizontalAlignment="Center">
@@ -113,10 +193,82 @@
                 </StackPanel>
             </Grid>
             <Grid Grid.Column="1" Grid.Row="1" VerticalAlignment="Stretch" Background="Transparent">
+                <Image Source="Assets/double-arrows.png" 
+                       Height="64" Width="64" ZIndex="-1" Margin="0 0 0 600" Classes="moveUp">
+                    <Image.Styles>
+                        <Style Selector="Image.moveUp">
+                            <Style.Animations>
+                                <Animation Duration="0:0:8" IterationCount="INFINITE" >
+                                    <KeyFrame Cue="0%">
+                                        <Setter Property="RotateTransform.Angle" Value="-90"/> 
+                                        <Setter Property="Opacity" Value="1.0"/>
+                                        <Setter Property="TranslateTransform.Y" Value="0.0"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="12.5%">
+                                        <Setter Property="RotateTransform.Angle" Value="-90"/>  
+                                        <Setter Property="Opacity" Value="0.0"/>
+                                        <Setter Property="TranslateTransform.Y" Value="-40"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="12.5%">
+                                        <Setter Property="RotateTransform.Angle" Value="-90"/> 
+                                        <Setter Property="Opacity" Value="1.0"/>
+                                        <Setter Property="TranslateTransform.Y" Value="0.0"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="25%">
+                                        <Setter Property="RotateTransform.Angle" Value="-90"/>  
+                                        <Setter Property="Opacity" Value="0.0"/>
+                                        <Setter Property="TranslateTransform.Y" Value="-40"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="100%">
+                                        <Setter Property="RotateTransform.Angle" Value="-90"/> 
+                                        <Setter Property="Opacity" Value="0.0"/>
+                                        <Setter Property="TranslateTransform.Y" Value="-40"/>
+                                    </KeyFrame>
+                                </Animation> 
+                            </Style.Animations>
+                        </Style>
+                    </Image.Styles>
+                </Image>
+                <Image Source="Assets/double-arrows.png" 
+                       Height="64" Width="64" ZIndex="-1" Margin="0 -100 0 0" Classes="moveDown">
+                    <Image.Styles>
+                        <Style Selector="Image.moveDown">
+                            <Style.Animations>
+                                <Animation Duration="0:0:8" IterationCount="INFINITE" >
+                                    <KeyFrame Cue="0%">
+                                        <Setter Property="RotateTransform.Angle" Value="90"/> 
+                                        <Setter Property="Opacity" Value="1.0"/>
+                                        <Setter Property="TranslateTransform.Y" Value="0.0"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="12.5%">
+                                        <Setter Property="RotateTransform.Angle" Value="90"/>  
+                                        <Setter Property="Opacity" Value="0.0"/>
+                                        <Setter Property="TranslateTransform.Y" Value="40"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="12.5%">
+                                        <Setter Property="RotateTransform.Angle" Value="90"/> 
+                                        <Setter Property="Opacity" Value="1.0"/>
+                                        <Setter Property="TranslateTransform.Y" Value="0.0"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="25%">
+                                        <Setter Property="RotateTransform.Angle" Value="90"/>  
+                                        <Setter Property="Opacity" Value="0.0"/>
+                                        <Setter Property="TranslateTransform.Y" Value="40"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="100%">
+                                        <Setter Property="RotateTransform.Angle" Value="90"/> 
+                                        <Setter Property="Opacity" Value="0.0"/>
+                                        <Setter Property="TranslateTransform.Y" Value="40"/>
+                                    </KeyFrame>
+                                </Animation> 
+                            </Style.Animations>
+                        </Style>
+                    </Image.Styles>
+                </Image>
                 <StackPanel Background="Transparent" Orientation="Vertical"
                             VerticalAlignment="Top">
                     <Image Height="192" x:Name="PreviousGameLogoImage"
-                           Opacity="0.0">
+                           Opacity="0.0" Margin="0 -96 0 0">
                         <Image.Effect>
                             <DropShadowEffect OffsetX="0"
                                               OffsetY="0"
@@ -207,11 +359,7 @@
                         </TextBlock>
                     </StackPanel>
                 </StackPanel>
-                <Border DockPanel.Dock="Top" CornerRadius="15" Background="Transparent"
-                        BorderThickness="2" BorderBrush="Transparent" Margin="50 0 0 0"
-                        VerticalAlignment="Stretch">
-                    <avalonia:VideoView x:Name="VideoView" Margin="34 25" VerticalAlignment="Stretch"/>
-                </Border>
+                <avalonia:VideoView x:Name="VideoView" DockPanel.Dock="Top" Margin="84 40" VerticalAlignment="Stretch"/>
             </DockPanel>
         </Grid>
         <Panel x:Name="FadePanel" Background="Black" Opacity="0"/>

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ArcadeShine.Common;
 using ArcadeShine.Common.DataModel;
+using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
@@ -461,6 +462,10 @@ public partial class MainWindow : Window
     private void PlayCurrentGameVideo()
     {
         _currentVideoMedia = new Media(_libVlc, _currentCategoryGames[_currentGameIndex].GameVideo);
+        Dispatcher.UIThread.Invoke(() =>
+            VideoView.Margin = _currentCategoryGames[_currentGameIndex].GameVideoAspectRatio == "16:9"
+                ? Thickness.Parse("84 40")
+                : Thickness.Parse("208 40"));
         ThreadPool.QueueUserWorkItem(_ => VideoView.MediaPlayer?.Play(_currentVideoMedia));
     }
 
