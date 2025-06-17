@@ -27,8 +27,8 @@ public partial class GameSystemsTabContent : UserControl
     {
         SystemDisplayNameTextBox.Text = system.SystemDisplayName;
         SystemIdentifierTextBox.Text = system.SystemIdentifier;
-        SystemGameLaunchFolderTextBox.Text = system.SystemGameLaunchFolder;
-        SystemGameLaunchCommandTextBox.Text = system.SystemGameLaunchCommand;
+        SystemExecutableTextBox.Text = system.SystemExecutable;
+        SystemExecutableArgumentsTextBox.Text = system.SystemExecutableArguments;
         try
         {
             SystemLogoFilename.Text = system.SystemLogo;
@@ -41,16 +41,19 @@ public partial class GameSystemsTabContent : UserControl
         }
     }
     
-    private async void BrowseSystemGameLaunchFolderButton_OnClick(object? sender, RoutedEventArgs e)
+    private async void BrowseSystemExecutableButton_OnClick(object? sender, RoutedEventArgs e)
     {
         if (App.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var mainWindow = desktop.MainWindow as MainWindow;
-            var result = await mainWindow.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
-                { AllowMultiple = false, Title = "Choose the game system bin folder" });
+            var result = await mainWindow.StorageProvider.OpenFilePickerAsync(new()
+            {
+                AllowMultiple = false, 
+                Title = "Choose the game system executable"
+            });
             if (result.Count == 0) return;
             var absolutePath = HttpUtility.UrlDecode(result[0].Path.AbsolutePath, Encoding.UTF8);
-            SystemGameLaunchFolderTextBox.Text = absolutePath;
+            SystemExecutableTextBox.Text = absolutePath;
         }
     }
 
@@ -86,8 +89,8 @@ public partial class GameSystemsTabContent : UserControl
         var system = App.ArcadeShineSystemList[GameSystemListBox.SelectedIndex];
         system.SystemDisplayName = SystemDisplayNameTextBox.Text!;
         system.SystemIdentifier = SystemIdentifierTextBox.Text!;
-        system.SystemGameLaunchFolder = SystemGameLaunchFolderTextBox.Text!;
-        system.SystemGameLaunchCommand = SystemGameLaunchCommandTextBox.Text!;
+        system.SystemExecutable = SystemExecutableTextBox.Text!;
+        system.SystemExecutableArguments = SystemExecutableArgumentsTextBox.Text!;
         system.SystemLogo = SystemLogoFilename.Text!;
         RedrawGameSystemListBox();
         ArcadeShineSystemList.Save(App.ArcadeShineFrontendSettings.GameLibraryPath, App.ArcadeShineSystemList);

@@ -40,7 +40,9 @@
                     </DockPanel>
                     <DockPanel Margin="10" HorizontalAlignment="Stretch">
                         <TextBlock Text="Game ROM filename:" VerticalAlignment="Center" Width="220" />
-                        <TextBox x:Name="GameRomIdentifierTextBox"
+                        <Button Content="Browse" HorizontalAlignment="Right" DockPanel.Dock="Right"
+                                Margin="0 0 15 0" Click="BrowseRomFileButton_OnClick"/>
+                        <TextBox x:Name="GameRomFileTextBox"
                                  AcceptsReturn="False" AcceptsTab="False" DockPanel.Dock="Right"
                                  Margin="15 0" 
                                  HorizontalAlignment="Stretch"/>

@@ -45,16 +45,16 @@
                              HorizontalAlignment="Stretch"/>
                 </DockPanel>
                 <DockPanel Margin="10" HorizontalAlignment="Stretch">
-                    <TextBlock Text="System execution folder:" VerticalAlignment="Center" Width="220" />
+                    <TextBlock Text="System executable:" VerticalAlignment="Center" Width="220" />
                     <Button Content="Browse" HorizontalAlignment="Right" DockPanel.Dock="Right"
-                            Margin="0 0 15 0" Click="BrowseSystemGameLaunchFolderButton_OnClick"/>
-                    <TextBox DockPanel.Dock="Right" x:Name="SystemGameLaunchFolderTextBox"
+                            Margin="0 0 15 0" Click="BrowseSystemExecutableButton_OnClick"/>
+                    <TextBox DockPanel.Dock="Right" x:Name="SystemExecutableTextBox"
                              Margin="15 0 5 0" 
                              HorizontalAlignment="Stretch" />
                 </DockPanel>
                 <DockPanel Margin="10" HorizontalAlignment="Stretch">
-                    <TextBlock Text="System game launch command:" VerticalAlignment="Center" Width="220" />
-                    <TextBox x:Name="SystemGameLaunchCommandTextBox"
+                    <TextBlock Text="System executable arguments:" VerticalAlignment="Center" Width="220" />
+                    <TextBox x:Name="SystemExecutableArgumentsTextBox"
                              Margin="15 0" 
                              HorizontalAlignment="Stretch"/>
                 </DockPanel>

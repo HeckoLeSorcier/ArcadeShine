@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -48,6 +49,9 @@ public partial class MainWindow : Window
     private Task _nextGameAnimationTask;
     private Task _previousGameAnimationTask;
     private Media _currentVideoMedia;
+    
+    private Animation _globalFadeOutAnimation;
+    private Animation _globalFadeInAnimation;
     
     public MainWindow()
     {
@@ -185,6 +189,7 @@ public partial class MainWindow : Window
                         }
                         break;
                     case InputActionEnum.SelectAction:
+                        LaunchCurrentSelectedGame();
                         break;
                     case InputActionEnum.BackAction:
                         break;
@@ -193,6 +198,39 @@ public partial class MainWindow : Window
                 }
             }
         }
+    }
+
+    private async void LaunchCurrentSelectedGame()
+    {
+        PauseVideo();
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            VideoView.IsVisible = false;
+            FadePanel.Opacity = 1.0;
+        });
+        await _globalFadeOutAnimation.RunAsync(FadePanel);
+        
+        // Create a new process
+        Process process = new Process();
+        // Set the process start info
+        process.StartInfo.FileName = App.ArcadeShineSystemList[_currentSystemIndex].SystemExecutable; // specify the command to run
+        var arguments = App.ArcadeShineSystemList[_currentSystemIndex].SystemExecutableArguments.Replace("{GAME_FILE}", _currentCategoryGames[_currentGameIndex].GameRomFile);
+        process.StartInfo.Arguments = arguments; // specify the arguments
+        // Set additional process start info as necessary
+        process.StartInfo.UseShellExecute = false;
+        process.StartInfo.RedirectStandardOutput = true;
+        // Start the process
+        process.Start();
+        // Wait for the process to exit
+        process.WaitForExit();
+        
+        await _globalFadeInAnimation.RunAsync(FadePanel);
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            FadePanel.Opacity = 0.0;
+            VideoView.IsVisible = true;
+        });
+        ThreadPool.QueueUserWorkItem(_ => VideoView.MediaPlayer.Play(_currentVideoMedia));
     }
 
     private async Task LaunchNextCategoryAnimations()
@@ -434,6 +472,40 @@ public partial class MainWindow : Window
             Cue = new Cue(1.0),
             Setters = { new Setter(OpacityProperty, 1.0), new Setter(TranslateTransform.YProperty, 0.0) }
         });
+        
+        //Global Fade Out
+        _globalFadeOutAnimation = new Animation
+        {
+            Duration = TimeSpan.FromSeconds(1.0),
+            Easing = new SineEaseOut()
+        };
+        _globalFadeOutAnimation.Children.Add(new KeyFrame()
+        {
+            Cue = new Cue(0.0),
+            Setters = { new Setter(OpacityProperty, 0.0) }
+        });
+        _globalFadeOutAnimation.Children.Add(new KeyFrame()
+        {
+            Cue = new Cue(1.0),
+            Setters = { new Setter(OpacityProperty, 1.0) }
+        });
+        
+        //Global Fade In
+        _globalFadeInAnimation = new Animation
+        {
+            Duration = TimeSpan.FromSeconds(1.0),
+            Easing = new SineEaseIn()
+        };
+        _globalFadeInAnimation.Children.Add(new KeyFrame()
+        {
+            Cue = new Cue(0.0),
+            Setters = { new Setter(OpacityProperty, 1.0) }
+        });
+        _globalFadeInAnimation.Children.Add(new KeyFrame()
+        {
+            Cue = new Cue(1.0),
+            Setters = { new Setter(OpacityProperty, 0.0) }
+        });
     }
 
     public void Play()
@@ -472,6 +544,11 @@ public partial class MainWindow : Window
     private void CancelVideoPlay()
     {
         VideoView.MediaPlayer?.Stop();
+    }
+    
+    private void PauseVideo()
+    {
+        VideoView.MediaPlayer?.Pause();
     }
    
     public void Dispose()

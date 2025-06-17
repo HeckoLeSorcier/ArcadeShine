@@ -27,7 +27,7 @@ public partial class GamesTabContent : UserControl
         GameSystemComboBox.ItemsSource = App.ArcadeShineSystemList;
         
         GameDisplayNameTextBox.Text = game.GameName;
-        GameRomIdentifierTextBox.Text = game.GameRomIdentifier;
+        GameRomFileTextBox.Text = game.GameRomFile;
         GameShortDescTextBox.Text = game.GameDescription;
         GameDeveloperTextBox.Text = game.GameDeveloper;
         GameReleaseYearTextBox.Text = game.GameReleaseYear;
@@ -101,7 +101,7 @@ public partial class GamesTabContent : UserControl
     {
         var game = App.ArcadeShineGameList[GameListBox.SelectedIndex];
         game.GameName = GameDisplayNameTextBox.Text!;
-        game.GameRomIdentifier = GameRomIdentifierTextBox.Text!;
+        game.GameRomFile = GameRomFileTextBox.Text!;
         game.GameDescription = GameShortDescTextBox.Text!;
         if(GameSystemComboBox.ItemCount > 0 && GameSystemComboBox.SelectedIndex >= 0)
             game.GameSystem = ((ArcadeShineSystem)GameSystemComboBox.SelectedValue).SystemIdentifier;
@@ -209,6 +209,22 @@ public partial class GamesTabContent : UserControl
             if (result.Count == 0) return;
             var absolutePath = HttpUtility.UrlDecode(result[0].Path.AbsolutePath, Encoding.UTF8);
             GameVideoTextBox.Text = absolutePath;
+        }
+    }
+
+    private async void BrowseRomFileButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (App.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            var mainWindow = desktop.MainWindow as MainWindow;
+            var result = await mainWindow.StorageProvider.OpenFilePickerAsync(new()
+            {
+                AllowMultiple = false, 
+                Title = "Choose the game ROM file"
+            });
+            if (result.Count == 0) return;
+            var absolutePath = HttpUtility.UrlDecode(result[0].Path.AbsolutePath, Encoding.UTF8);
+            GameRomFileTextBox.Text = absolutePath;
         }
     }
 }

@@ -7,7 +7,7 @@ namespace ArcadeShine.Common.DataModel;
 
 public class ArcadeShineGame
 {
-    public string GameRomIdentifier { get; set; } = "";
+    public string GameRomFile { get; set; } = "";
     
     public string GameName { get; set; } = "";
     

@@ -11,9 +11,9 @@ public class ArcadeShineSystem
     
     public string SystemIdentifier { get; set; } = "SystemIdentifier";
     
-    public string SystemGameLaunchFolder { get; set; } = "C:\\SystemGameLaunchFolder\\";
+    public string SystemExecutable { get; set; } = "C:\\SystemGameLaunchFolder\\Executable.exe";
     
-    public string SystemGameLaunchCommand { get; set; } = "system.exe -f -g \"{GAME_FILE}\"";
+    public string SystemExecutableArguments { get; set; } = "-f -g \"{GAME_FILE}\"";
     
     public string SystemLogo { get; set; } = "GameSystemLogo.png";
 }
