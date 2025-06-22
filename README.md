@@ -8,6 +8,6 @@ Arcade Shine frontend and Arcade Shine Manager are developped with [.NET 8](http
 
 ## Screenshots
 
-![ArcadeShineManager 1](Screenshots/ArcadeShineManager1.png)
-![ArcadeShineManager 2](Screenshots/ArcadeShineManager2.png)
-![ArcadeShineFrontend 1](Screenshots/ArcadeShineFrontend1.png)
+![ArcadeShineManager-1](Screenshots/ArcadeShineManager1.png)
+![ArcadeShineManager-2](Screenshots/ArcadeShineManager2.png)
+![ArcadeShineFrontend-1](Screenshots/ArcadeShineFrontend1.png)
