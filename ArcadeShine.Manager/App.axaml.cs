@@ -4,7 +4,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
-namespace ArcadeShineManager;
+namespace ArcadeShine.Manager;
 
 public partial class App : Application
 {

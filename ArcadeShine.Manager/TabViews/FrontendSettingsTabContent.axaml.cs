@@ -6,7 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 
-namespace ArcadeShineManager.TabViews;
+namespace ArcadeShine.Manager.TabViews;
 
 public partial class FrontendSettingsTabContent : UserControl
 {

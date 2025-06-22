@@ -1,7 +1,7 @@
 ﻿using Avalonia;
 using System;
 
-namespace ArcadeShineManager;
+namespace ArcadeShine.Manager;
 
 class Program
 {

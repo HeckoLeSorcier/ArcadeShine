@@ -1,7 +1,7 @@
 ﻿using Avalonia;
 using System;
 
-namespace ArcadeShine;
+namespace ArcadeShine.Frontend;
 
 class Program
 {

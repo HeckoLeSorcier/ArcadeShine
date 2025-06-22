@@ -3,16 +3,12 @@
   <component name="AvaloniaProject">
     <option name="projectPerEditor">
       <map>
-        <entry key="ArcadeShine/App.axaml" value="ArcadeShine/ArcadeShine.csproj" />
-        <entry key="ArcadeShine/MainWindow.axaml" value="ArcadeShine/ArcadeShine.csproj" />
-        <entry key="ArcadeShineManager/App.axaml" value="ArcadeShineManager/ArcadeShineManager.csproj" />
-        <entry key="ArcadeShineManager/FrontendSettingsTabContent.axaml" value="ArcadeShineManager/ArcadeShineManager.csproj" />
-        <entry key="ArcadeShineManager/GameSystemsTabContent.axaml" value="ArcadeShineManager/ArcadeShineManager.csproj" />
-        <entry key="ArcadeShineManager/GamesTabContent.axaml" value="ArcadeShineManager/ArcadeShineManager.csproj" />
-        <entry key="ArcadeShineManager/MainWindow.axaml" value="ArcadeShineManager/ArcadeShineManager.csproj" />
-        <entry key="ArcadeShineManager/TabViews/FrontendSettingsTabContent.axaml" value="ArcadeShineManager/ArcadeShineManager.csproj" />
-        <entry key="ArcadeShineManager/TabViews/GameSystemsTabContent.axaml" value="ArcadeShineManager/ArcadeShineManager.csproj" />
-        <entry key="ArcadeShineManager/TabViews/GamesTabContent.axaml" value="ArcadeShineManager/ArcadeShineManager.csproj" />
+        <entry key="ArcadeShine.Frontend/App.axaml" value="ArcadeShine.Frontend/ArcadeShine.Frontend.csproj" />
+        <entry key="ArcadeShine.Frontend/MainWindow.axaml" value="ArcadeShine.Frontend/ArcadeShine.Frontend.csproj" />
+        <entry key="ArcadeShine.Manager/MainWindow.axaml" value="ArcadeShine.Manager/ArcadeShine.Manager.csproj" />
+        <entry key="ArcadeShine.Manager/TabViews/FrontendSettingsTabContent.axaml" value="ArcadeShine.Manager/ArcadeShine.Manager.csproj" />
+        <entry key="ArcadeShine.Manager/TabViews/GameSystemsTabContent.axaml" value="ArcadeShine.Manager/ArcadeShine.Manager.csproj" />
+        <entry key="ArcadeShine.Manager/TabViews/GamesTabContent.axaml" value="ArcadeShine.Manager/ArcadeShine.Manager.csproj" />
       </map>
     </option>
   </component>

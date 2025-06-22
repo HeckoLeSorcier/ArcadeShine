@@ -1,13 +1,11 @@
 using System.Globalization;
-using System.IO;
 using ArcadeShine.Common;
 using ArcadeShine.Common.DataModel;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Newtonsoft.Json;
 
-namespace ArcadeShine;
+namespace ArcadeShine.Frontend;
 
 public partial class App : Application
 {

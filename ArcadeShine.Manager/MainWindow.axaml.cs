@@ -6,7 +6,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 
-namespace ArcadeShineManager;
+namespace ArcadeShine.Manager;
 
 public partial class MainWindow : Window
 {

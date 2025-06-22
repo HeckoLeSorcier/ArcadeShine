@@ -2,10 +2,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:dataModel="clr-namespace:ArcadeShine.Common.DataModel;assembly=ArcadeShine.Common"
         mc:Ignorable="d" d:DesignWidth="1080" d:DesignHeight="720"
         Width="1080" Height="720"
-        x:Class="ArcadeShineManager.MainWindow"
+        x:Class="ArcadeShine.Manager.MainWindow"
         Title="Arcade Shine Manager">
     <Window.Background>
         <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">

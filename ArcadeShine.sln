@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArcadeShine", "ArcadeShine\ArcadeShine.csproj", "{3BD9E390-64AC-4FC5-A2FE-A260C09BBE5C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArcadeShine.Frontend", "ArcadeShine.Frontend\ArcadeShine.Frontend.csproj", "{3BD9E390-64AC-4FC5-A2FE-A260C09BBE5C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArcadeShineManager", "ArcadeShineManager\ArcadeShineManager.csproj", "{C962103C-DA26-4430-8CCF-D77C890B5287}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArcadeShine.Manager", "ArcadeShine.Manager\ArcadeShine.Manager.csproj", "{C962103C-DA26-4430-8CCF-D77C890B5287}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArcadeShine.Common", "ArcadeShine.Common\ArcadeShine.Common.csproj", "{463C0931-F5DF-4DA0-8355-03CABBA4B1AC}"
 EndProject

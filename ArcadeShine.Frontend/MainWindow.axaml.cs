@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +18,7 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using LibVLCSharp.Shared;
 
-namespace ArcadeShine;
+namespace ArcadeShine.Frontend;
 
 public partial class MainWindow : Window
 {

@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ArcadeShine.Lang {
+namespace ArcadeShine.Frontend.Lang {
     using System;
     
     
@@ -21,14 +21,14 @@ namespace ArcadeShine.Lang {
         private static System.Globalization.CultureInfo resourceCulture;
         
         [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Resources() {
+        public Resources() {
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
         public static System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.Equals(null, resourceMan)) {
-                    System.Resources.ResourceManager temp = new System.Resources.ResourceManager("ArcadeShine.Lang.Resources", typeof(Resources).Assembly);
+                    System.Resources.ResourceManager temp = new System.Resources.ResourceManager("ArcadeShine.Frontend.Lang.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -57,15 +57,15 @@ namespace ArcadeShine.Lang {
             }
         }
         
-        public static string TitleNumber {
-            get {
-                return ResourceManager.GetString("TitleNumber", resourceCulture);
-            }
-        }
-        
         public static string TitleCount {
             get {
                 return ResourceManager.GetString("TitleCount", resourceCulture);
+            }
+        }
+        
+        public static string TitleNumber {
+            get {
+                return ResourceManager.GetString("TitleNumber", resourceCulture);
             }
         }
     }

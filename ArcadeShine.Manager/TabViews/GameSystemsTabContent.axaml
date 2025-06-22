@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:dataModel="clr-namespace:ArcadeShine.Common.DataModel;assembly=ArcadeShine.Common"
              mc:Ignorable="d" d:DesignWidth="1080" d:DesignHeight="640"
-             x:Class="ArcadeShineManager.TabViews.GameSystemsTabContent">
+             x:Class="ArcadeShine.Manager.TabViews.GameSystemsTabContent">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="3*"/>

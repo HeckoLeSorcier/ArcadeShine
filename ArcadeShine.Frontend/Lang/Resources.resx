@@ -19,15 +19,15 @@
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
     <data name="SelectCategoryText" xml:space="preserve">
-        <value>Sélectionner une catégorie</value>
+        <value>Select category</value>
     </data>
     <data name="SelectGameText" xml:space="preserve">
-        <value>Sélectionner un jeu</value>
-    </data>
-    <data name="TitleNumber" xml:space="preserve">
-        <value>Titre n°</value>
+        <value>Select game</value>
     </data>
     <data name="TitleCount" xml:space="preserve">
-        <value>Titres total :</value>
+        <value>Total titles:</value>
+    </data>
+    <data name="TitleNumber" xml:space="preserve">
+        <value>Title n°</value>
     </data>
 </root>
