@@ -53,17 +53,141 @@ public partial class MainWindow : Window
     private Animation _globalFadeOutAnimation;
     private Animation _globalFadeInAnimation;
     
+    private IDisposable _autoSelectRandomGameTimer;
+    private bool _isRandomizingGameSelection = false;
+    private bool _cancelRandomGameSelection = false;
+    
     public MainWindow()
     {
         InitializeComponent();
         
-        MapInputs();
-        UpdateCategory();
-        UpdateGame();
+        Cursor = new Cursor(StandardCursorType.None);
         
+        MapInputs();
+
+        var gameIsSelected = false;
+        string gameNameToSelect;
+        if (App.ArcadeShineFrontendSettings.PreserveLastSelectedGameOnExit)
+            gameNameToSelect = App.ArcadeShineFrontendSettings.LastSelectedGame;
+        else
+            gameNameToSelect = App.ArcadeShineFrontendSettings.DefaultSelectedGame;
+        if (!string.IsNullOrEmpty(gameNameToSelect))
+        {
+            var selectedGame =
+                App.ArcadeShineGameList.FirstOrDefault(g =>
+                    g.GameName == gameNameToSelect);
+            if (selectedGame != null)
+            {
+                var lastGameSystem =
+                    App.ArcadeShineSystemList.FirstOrDefault(s => s.SystemIdentifier == selectedGame.GameSystem);
+                if (lastGameSystem != null)
+                {
+                    _currentSystemIndex = App.ArcadeShineSystemList.IndexOf(lastGameSystem);
+                    UpdateCategory();
+                    _currentGameIndex = _currentCategoryGames.IndexOf(selectedGame);
+                    UpdateGame();
+                    gameIsSelected = true;
+                }
+            }
+        }
+
+        if (!gameIsSelected)
+        {
+            UpdateCategory();
+            UpdateGame();
+        }
+
         Loaded += OnLoaded;
         KeyDown += OnKeyDown;
+
+        if (App.ArcadeShineFrontendSettings.AllowInactivityMode)
+            _autoSelectRandomGameTimer = DispatcherTimer.RunOnce(SelectRandomGame,
+                TimeSpan.FromSeconds(App.ArcadeShineFrontendSettings.SecondsBeforeRandomGameSelectionInactivityMode));
     }
+
+    private async void SelectRandomGame()
+    {
+        _isRandomizingGameSelection = true;
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            VideoView.IsVisible = false;
+            FadePanel.Opacity = 1.0;
+        });
+        await _globalFadeOutAnimation.RunAsync(FadePanel);
+        if (_cancelRandomGameSelection)
+        {
+            CancelRandomGameSelection();
+            return;       
+        }
+        await Task.Delay(TimeSpan.FromSeconds(0.5));
+        if (_cancelRandomGameSelection)
+        {
+            CancelRandomGameSelection();
+            return;       
+        }
+        var currentGameListIndex = App.ArcadeShineGameList.IndexOf(_currentCategoryGames[_currentGameIndex]);
+        Random random = new Random();
+        var randomGameIndex = random.Next(0, App.ArcadeShineGameList.Count);
+        while (currentGameListIndex == randomGameIndex)
+        {
+            randomGameIndex = random.Next(0, App.ArcadeShineGameList.Count);
+        }
+        if (_cancelRandomGameSelection)
+        {
+            CancelRandomGameSelection();
+            return;       
+        }
+        var randomGame = App.ArcadeShineGameList[randomGameIndex];
+        var randomGameSystem = App.ArcadeShineSystemList.FirstOrDefault(s => s.SystemIdentifier == randomGame.GameSystem);
+        if (randomGameSystem != null)
+            _currentSystemIndex = App.ArcadeShineSystemList.IndexOf(randomGameSystem);
+        if (_cancelRandomGameSelection)
+        {
+            CancelRandomGameSelection();
+            return;       
+        }
+        UpdateCategory();
+        if (_cancelRandomGameSelection)
+        {
+            CancelRandomGameSelection();
+            return;       
+        }
+        _currentGameIndex = _currentCategoryGames.IndexOf(randomGame);
+        UpdateGame();
+        if (_cancelRandomGameSelection)
+        {
+            CancelRandomGameSelection();
+            return;       
+        }
+        await Task.Delay(TimeSpan.FromSeconds(0.5));
+        if (_cancelRandomGameSelection)
+        {
+            CancelRandomGameSelection();
+            return;       
+        }
+        await _globalFadeInAnimation.RunAsync(FadePanel);
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            FadePanel.Opacity = 0.0;
+            VideoView.IsVisible = true;
+        });
+        _autoSelectRandomGameTimer.Dispose();
+        _autoSelectRandomGameTimer = DispatcherTimer.RunOnce(SelectRandomGame,
+            TimeSpan.FromSeconds(App.ArcadeShineFrontendSettings.SecondsBeforeRandomGameSelectionInactivityMode));
+        _isRandomizingGameSelection = false;
+    }
+
+    private void CancelRandomGameSelection()
+    {
+        _isRandomizingGameSelection = false;
+        _cancelRandomGameSelection = false;
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            FadePanel.Opacity = 0.0;
+            VideoView.IsVisible = true;
+        });
+    }
+
 
     private void MapInputs()
     {
@@ -80,6 +204,16 @@ public partial class MainWindow : Window
     {
         if (InputActionMap.ContainsValue(e.Key))
         {
+            if (App.ArcadeShineFrontendSettings.AllowInactivityMode)
+            {
+                _autoSelectRandomGameTimer.Dispose();
+                _autoSelectRandomGameTimer = DispatcherTimer.RunOnce(SelectRandomGame,
+                    TimeSpan.FromSeconds(App.ArcadeShineFrontendSettings.SecondsBeforeRandomGameSelectionInactivityMode));
+                if (_isRandomizingGameSelection)
+                {
+                    _cancelRandomGameSelection = true;
+                }
+            }
             InputActionEnum? action = null;
             foreach (var kvp in InputActionMap)
             {
@@ -203,12 +337,20 @@ public partial class MainWindow : Window
     private async void LaunchCurrentSelectedGame()
     {
         PauseVideo();
+        CancelVideoPlay();
+        _autoSelectRandomGameTimer.Dispose();
         Dispatcher.UIThread.Invoke(() =>
         {
             VideoView.IsVisible = false;
             FadePanel.Opacity = 1.0;
         });
         await _globalFadeOutAnimation.RunAsync(FadePanel);
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            LoadingPanel.IsVisible = true;
+        });
+        
+        await Task.Delay(TimeSpan.FromSeconds(0.5));
         
         // Create a new process
         Process process = new Process();
@@ -218,12 +360,16 @@ public partial class MainWindow : Window
         process.StartInfo.Arguments = arguments; // specify the arguments
         // Set additional process start info as necessary
         process.StartInfo.UseShellExecute = false;
+        process.StartInfo.CreateNoWindow = true;
         process.StartInfo.RedirectStandardOutput = true;
         // Start the process
         process.Start();
         // Wait for the process to exit
-        process.WaitForExit();
-        
+        await process.WaitForExitAsync();
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            LoadingPanel.IsVisible = false;
+        });
         await _globalFadeInAnimation.RunAsync(FadePanel);
         Dispatcher.UIThread.Invoke(() =>
         {
@@ -231,6 +377,8 @@ public partial class MainWindow : Window
             VideoView.IsVisible = true;
         });
         ThreadPool.QueueUserWorkItem(_ => VideoView.MediaPlayer.Play(_currentVideoMedia));
+        _autoSelectRandomGameTimer = DispatcherTimer.RunOnce(SelectRandomGame,
+            TimeSpan.FromSeconds(App.ArcadeShineFrontendSettings.SecondsBeforeRandomGameSelectionInactivityMode));
     }
 
     private async Task LaunchNextCategoryAnimations()
@@ -306,12 +454,15 @@ public partial class MainWindow : Window
             if (_currentGameIndex == _currentCategoryGames.Count - 1) nextIndex = 0;
         }
 
+        App.ArcadeShineFrontendSettings.LastSelectedGame = _currentCategoryGames[_currentGameIndex].GameName;
+        ArcadeShineFrontendSettings.Save(App.ArcadeShineFrontendSettings);
         Bitmap previousGameLogo = new Bitmap(_currentCategoryGames[previousIndex].GameLogo);
         Bitmap currentGameLogo = new Bitmap(_currentCategoryGames[_currentGameIndex].GameLogo);
         Bitmap nextGameLogo = new Bitmap(_currentCategoryGames[nextIndex].GameLogo);
         Bitmap gameBackground = new Bitmap(_currentCategoryGames[_currentGameIndex].GameBackgroundPicture);
         Dispatcher.UIThread.Invoke(() =>
         {
+            GameTitleIndexCountTextBlock.Text = $"{Lang.Resources.TitleNumber} {_currentGameIndex + 1} / {_currentCategoryGames.Count}    {Lang.Resources.TitleCount} {App.ArcadeShineGameList.Count}";
             CurrentGameLogoImage.Source = currentGameLogo;
             NextGameLogoImage.Source = nextGameLogo;
             PreviousGameLogoImage.Source = previousGameLogo;

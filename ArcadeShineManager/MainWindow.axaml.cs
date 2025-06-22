@@ -10,6 +10,9 @@ namespace ArcadeShineManager;
 
 public partial class MainWindow : Window
 {
+    public int? PreviousSelectedGameIndex = null;
+    public int? PreviousSelectedSystemIndex = null;
+    
     public MainWindow()
     {
         InitializeComponent();

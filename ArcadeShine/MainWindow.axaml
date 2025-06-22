@@ -140,8 +140,10 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"></ColumnDefinition>
                     <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center"> 
+                <StackPanel Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center"> 
                     <Image Source="Assets/LeftRightStickIcon.png" >
                         <Image.Effect>
                             <DropShadowEffect OffsetX="0"
@@ -166,7 +168,23 @@
                         </TextBlock.Effect>
                     </TextBlock>
                 </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                <StackPanel Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center"> 
+                    <TextBlock x:Name="GameTitleIndexCountTextBlock" 
+                               Margin="50 0 0 40"
+                               FontSize="18"
+                               Foreground="#EEE"
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Bottom">
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="Black"
+                                              Opacity="1"
+                                              BlurRadius="10"
+                                              OffsetX="0"
+                                              OffsetY="0" />
+                        </TextBlock.Effect>
+                    </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center">
                     <Image Source="Assets/UpDownStickIcon.png">
                         <Image.Effect>
                             <DropShadowEffect OffsetX="0"
@@ -362,6 +380,25 @@
                 <avalonia:VideoView x:Name="VideoView" DockPanel.Dock="Top" Margin="84 40" VerticalAlignment="Stretch"/>
             </DockPanel>
         </Grid>
-        <Panel x:Name="FadePanel" Background="Black" Opacity="0"/>
+        <Panel x:Name="FadePanel" Background="Black" Opacity="0" ZIndex="5"/>
+        <Panel x:Name="LoadingPanel" Background="Black" IsVisible="False" ZIndex="10">
+            <Image Source="/Assets/loading.png" HorizontalAlignment="Center" VerticalAlignment="Center"
+                   Height="128" Width="128">
+                <Image.Styles>
+                    <Style Selector="Image">
+                        <Style.Animations>
+                            <Animation Duration="0:0:1" IterationCount="Infinite">
+                                <KeyFrame Cue="0%">
+                                    <Setter Property="RotateTransform.Angle" Value="0"/>
+                                </KeyFrame>
+                                <KeyFrame Cue="100%">
+                                    <Setter Property="RotateTransform.Angle" Value="360"/>
+                                </KeyFrame>
+                            </Animation>
+                        </Style.Animations>
+                    </Style>
+                </Image.Styles>
+            </Image>
+        </Panel>
     </Panel>
 </Window>

@@ -6,26 +6,63 @@ using ArcadeShine.Common;
 using ArcadeShine.Common.DataModel;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Enums;
 
 namespace ArcadeShineManager.TabViews;
 
 public partial class GamesTabContent : UserControl
 {
+    private MainWindow _mainWindow;
+    
     public GamesTabContent()
     {
         InitializeComponent();
+        if (App.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            _mainWindow = desktop.MainWindow as MainWindow;
+        }
         
         GameListBox.ItemsSource = App.ArcadeShineGameList;
         GameListBox.SelectionMode = SelectionMode.Single;
-        GameListBox.SelectedIndex = 0;
-        if(GameListBox.ItemCount == 0) GameDetailPanel.IsVisible = false;
+        if(GameListBox.ItemCount == 0)
+        {
+            GameDetailPanel.IsVisible = false;
+        }
+        if (_mainWindow.PreviousSelectedGameIndex != null)
+        {
+            GameListBox.SelectedIndex = _mainWindow.PreviousSelectedGameIndex.Value;
+            _mainWindow.PreviousSelectedGameIndex = null;       
+        }
+        else
+        {
+            GameListBox.SelectedIndex = 0;
+        }
+    }
+
+    private void ResetUi()
+    {
+        GameSystemComboBox.ItemsSource = null;
+        GameDisplayNameTextBox.Text = String.Empty;
+        GameRomFileTextBox.Text = String.Empty;
+        GameShortDescTextBox.Text = String.Empty;
+        GameDeveloperTextBox.Text = String.Empty;
+        GameReleaseYearTextBox.Text = String.Empty;
+        GameGenresTextBox.Text = String.Empty;
+        GameVideoAspectRatioComboBox.SelectedIndex = 0;
+        GameLogoFilename.Text = String.Empty;
+        GameLogoImage.Source = null;
+        GameBackgroundFilename.Text = String.Empty;
+        GameBackgroundImage.Source = null;
+        GameVideoTextBox.Text = String.Empty;
     }
     
     private void LoadGameUi(ArcadeShineGame game)
     {
+        ResetUi();
         GameSystemComboBox.ItemsSource = App.ArcadeShineSystemList;
-        
         GameDisplayNameTextBox.Text = game.GameName;
         GameRomFileTextBox.Text = game.GameRomFile;
         GameShortDescTextBox.Text = game.GameDescription;
@@ -75,11 +112,7 @@ public partial class GamesTabContent : UserControl
     
     private void RedrawGameListBox()
     {
-        if (App.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            var mainWindow = desktop.MainWindow as MainWindow;
-            mainWindow.UpdateTabContent();
-        }
+        _mainWindow.UpdateTabContent();
     }
 
     private void AddGameButton_OnClick(object? sender, RoutedEventArgs e)
@@ -88,8 +121,8 @@ public partial class GamesTabContent : UserControl
         var newGame = new ArcadeShineGame();
         App.ArcadeShineGameList.Add(newGame);
         GameListBox.ItemsSource = App.ArcadeShineGameList;
+        _mainWindow.PreviousSelectedGameIndex = App.ArcadeShineGameList.Count - 1;
         RedrawGameListBox();
-        GameListBox.SelectedIndex = App.ArcadeShineGameList.Count - 1;
     }
 
     private void GameListBox_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -122,9 +155,10 @@ public partial class GamesTabContent : UserControl
         }
         game.GameReleaseYear = GameReleaseYearTextBox.Text!;
         game.GameDeveloper = GameDeveloperTextBox.Text!;
-        game.GameGenres = GameGenresTextBox.Text.Replace(" ", string.Empty).Split(',').ToList();
-        RedrawGameListBox();
+        game.GameGenres = GameGenresTextBox.Text?.Replace(" ", string.Empty).Split(',').ToList();
         ArcadeShineGameList.Save(App.ArcadeShineFrontendSettings.GameLibraryPath, App.ArcadeShineGameList);
+        _mainWindow.PreviousSelectedGameIndex = GameListBox.SelectedIndex;
+        RedrawGameListBox();
     }
     
     private void SaveGameButton_OnClick(object? sender, RoutedEventArgs e)
@@ -138,13 +172,16 @@ public partial class GamesTabContent : UserControl
         GameListBox.SelectedIndex = 0;
         App.ArcadeShineGameList.Remove(game);
         GameListBox.ItemsSource = App.ArcadeShineGameList;
-        RedrawGameListBox();
         ArcadeShineGameList.Save(App.ArcadeShineFrontendSettings.GameLibraryPath, App.ArcadeShineGameList);
+        RedrawGameListBox();
     }
     
-    private void DeleteGameButton_OnClick(object? sender, RoutedEventArgs e)
+    private async void DeleteGameButton_OnClick(object? sender, RoutedEventArgs e)
     {
-        DeleteGameFromGameListFile();
+        var box = MessageBoxManager.GetMessageBoxStandard("Delete action", $"Are you sure you would like to delete this entry?", ButtonEnum.YesNo);
+        var result = await box.ShowAsync();
+        if(result == ButtonResult.Yes)
+            DeleteGameFromGameListFile();
     }
 
     private async void PickGameLogoButton_OnClick(object? sender, RoutedEventArgs e)

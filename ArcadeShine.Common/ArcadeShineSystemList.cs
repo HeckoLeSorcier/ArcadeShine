@@ -19,7 +19,13 @@ public class ArcadeShineSystemList : List<ArcadeShineSystem>
             return new ArcadeShineSystemList();
         }
         var json = File.ReadAllText(gameLibraryPath + "/" + GameLibraryFile);
-        return JsonConvert.DeserializeObject<ArcadeShineSystemList>(json) ?? new ArcadeShineSystemList();
+        var systemList = JsonConvert.DeserializeObject<ArcadeShineSystemList>(json);
+        if (systemList != null)
+        {
+            var ordered = systemList.OrderBy(s => s.SystemDisplayName).ToList();
+            return FromList(ordered);
+        }
+        return  new ArcadeShineSystemList();
     }
 
     public static void Save(string gameLibraryPath, ArcadeShineSystemList systemList)
@@ -32,5 +38,15 @@ public class ArcadeShineSystemList : List<ArcadeShineSystem>
             fileStream.Close();
         }
         File.WriteAllText(gameLibraryPath + "/" + GameLibraryFile, json);
+    }
+    
+    public static ArcadeShineSystemList FromList(List<ArcadeShineSystem> systems)
+    {
+        var systemList = new ArcadeShineSystemList();
+        foreach (var arcadeShineSystem in systems)
+        {
+            systemList.Add(arcadeShineSystem);
+        }
+        return systemList;       
     }
 }

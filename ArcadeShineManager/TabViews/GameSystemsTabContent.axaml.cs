@@ -8,23 +8,53 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Enums;
 
 namespace ArcadeShineManager.TabViews;
 
 public partial class GameSystemsTabContent : UserControl
 {
+    private MainWindow _mainWindow;
+    
     public GameSystemsTabContent()
     {
         InitializeComponent();
+        if (App.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            _mainWindow = desktop.MainWindow as MainWindow;
+        }
         
         GameSystemListBox.ItemsSource = App.ArcadeShineSystemList;
         GameSystemListBox.SelectionMode = SelectionMode.Single;
-        GameSystemListBox.SelectedIndex = 0;
-        if(GameSystemListBox.ItemCount == 0) GameSystemDetailPanel.IsVisible = false;
+        if(GameSystemListBox.ItemCount == 0)
+        {
+            GameSystemDetailPanel.IsVisible = false;
+        }
+        if (_mainWindow.PreviousSelectedSystemIndex != null)
+        {
+            GameSystemListBox.SelectedIndex = _mainWindow.PreviousSelectedSystemIndex.Value;
+            _mainWindow.PreviousSelectedSystemIndex = null;       
+        }
+        else
+        {
+            GameSystemListBox.SelectedIndex = 0;
+        }
+    }
+
+    private void ResetUi()
+    {
+        SystemDisplayNameTextBox.Text = String.Empty;
+        SystemIdentifierTextBox.Text = String.Empty;
+        SystemExecutableTextBox.Text = String.Empty;
+        SystemExecutableArgumentsTextBox.Text = String.Empty;
+        SystemLogoFilename.Text = String.Empty;
+        SystemLogoImage.Source = null;
     }
     
     private void LoadGameSystemUi(ArcadeShineSystem system)
     {
+        ResetUi();
         SystemDisplayNameTextBox.Text = system.SystemDisplayName;
         SystemIdentifierTextBox.Text = system.SystemIdentifier;
         SystemExecutableTextBox.Text = system.SystemExecutable;
@@ -92,22 +122,22 @@ public partial class GameSystemsTabContent : UserControl
         system.SystemExecutable = SystemExecutableTextBox.Text!;
         system.SystemExecutableArguments = SystemExecutableArgumentsTextBox.Text!;
         system.SystemLogo = SystemLogoFilename.Text!;
-        RedrawGameSystemListBox();
+        _mainWindow.PreviousSelectedSystemIndex = GameSystemListBox.SelectedIndex;
         ArcadeShineSystemList.Save(App.ArcadeShineFrontendSettings.GameLibraryPath, App.ArcadeShineSystemList);
+        RedrawGameSystemListBox();
     }
 
     private void RedrawGameSystemListBox()
     {
-        if (App.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            var mainWindow = desktop.MainWindow as MainWindow;
-            mainWindow.UpdateTabContent();
-        }
+        _mainWindow.UpdateTabContent();
     }
     
-    private void DeleteSystemButton_OnClick(object? sender, RoutedEventArgs e)
+    private async void DeleteSystemButton_OnClick(object? sender, RoutedEventArgs e)
     {
-        DeleteSystemFromSystemListFile();
+        var box = MessageBoxManager.GetMessageBoxStandard("Delete action", $"Are you sure you would like to delete this entry?", ButtonEnum.YesNo);
+        var result = await box.ShowAsync();
+        if(result == ButtonResult.Yes)
+            DeleteSystemFromSystemListFile();
     }
 
     private void DeleteSystemFromSystemListFile()
@@ -116,8 +146,8 @@ public partial class GameSystemsTabContent : UserControl
         GameSystemListBox.SelectedIndex = 0;
         App.ArcadeShineSystemList.Remove(system);
         GameSystemListBox.ItemsSource = App.ArcadeShineSystemList;
-        RedrawGameSystemListBox();
         ArcadeShineSystemList.Save(App.ArcadeShineFrontendSettings.GameLibraryPath, App.ArcadeShineSystemList);
+        RedrawGameSystemListBox();
     }
     
     private void SystemIdentifierTextBox_OnTextChanged(object? sender, TextChangedEventArgs e)
@@ -141,7 +171,7 @@ public partial class GameSystemsTabContent : UserControl
         var newSystem = new ArcadeShineSystem();
         App.ArcadeShineSystemList.Add(newSystem);
         GameSystemListBox.ItemsSource = App.ArcadeShineSystemList;
+        _mainWindow.PreviousSelectedSystemIndex = App.ArcadeShineSystemList.Count - 1;
         RedrawGameSystemListBox();
-        GameSystemListBox.SelectedIndex = App.ArcadeShineSystemList.Count - 1;
     }
 }

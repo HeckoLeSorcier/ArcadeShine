@@ -14,7 +14,7 @@ namespace ArcadeShine.Lang {
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static System.Resources.ResourceManager resourceMan;
         
@@ -25,7 +25,7 @@ namespace ArcadeShine.Lang {
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static System.Resources.ResourceManager ResourceManager {
+        public static System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.Equals(null, resourceMan)) {
                     System.Resources.ResourceManager temp = new System.Resources.ResourceManager("ArcadeShine.Lang.Resources", typeof(Resources).Assembly);
@@ -36,7 +36,7 @@ namespace ArcadeShine.Lang {
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static System.Globalization.CultureInfo Culture {
+        public static System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -54,6 +54,18 @@ namespace ArcadeShine.Lang {
         public static string SelectGameText {
             get {
                 return ResourceManager.GetString("SelectGameText", resourceCulture);
+            }
+        }
+        
+        public static string TitleNumber {
+            get {
+                return ResourceManager.GetString("TitleNumber", resourceCulture);
+            }
+        }
+        
+        public static string TitleCount {
+            get {
+                return ResourceManager.GetString("TitleCount", resourceCulture);
             }
         }
     }

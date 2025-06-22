@@ -24,4 +24,10 @@
     <data name="SelectGameText" xml:space="preserve">
         <value>Sélectionner un jeu</value>
     </data>
+    <data name="TitleNumber" xml:space="preserve">
+        <value>Titre n°</value>
+    </data>
+    <data name="TitleCount" xml:space="preserve">
+        <value>Titres total :</value>
+    </data>
 </root>

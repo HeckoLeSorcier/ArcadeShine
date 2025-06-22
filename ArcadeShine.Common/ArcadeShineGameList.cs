@@ -19,7 +19,13 @@ public class ArcadeShineGameList : List<ArcadeShineGame>
             return new ArcadeShineGameList();
         }
         var json = File.ReadAllText(gameLibraryPath + "/" + GameLibraryFile);
-        return JsonConvert.DeserializeObject<ArcadeShineGameList>(json) ?? new ArcadeShineGameList();
+        var gameList = JsonConvert.DeserializeObject<ArcadeShineGameList>(json);
+        if (gameList != null)
+        {
+            var ordered = gameList.OrderBy(s => s.GameName).ToList();
+            return FromList(ordered);
+        }
+        return  new ArcadeShineGameList();
     }
 
     public static void Save(string gameLibraryPath, ArcadeShineGameList gameList)
@@ -32,5 +38,15 @@ public class ArcadeShineGameList : List<ArcadeShineGame>
             fileStream.Close();
         }
         File.WriteAllText(gameLibraryPath + "/" + GameLibraryFile, json);
+    }
+    
+    public static ArcadeShineGameList FromList(List<ArcadeShineGame> games)
+    {
+        var gameList = new ArcadeShineGameList();
+        foreach (var arcadeShineGame in games)
+        {
+            gameList.Add(arcadeShineGame);
+        }
+        return gameList;       
     }
 }

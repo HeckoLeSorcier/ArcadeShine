@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:dataModel="clr-namespace:ArcadeShine.Common.DataModel;assembly=ArcadeShine.Common"
              mc:Ignorable="d" d:DesignWidth="1080" d:DesignHeight="640"
              x:Class="ArcadeShineManager.TabViews.FrontendSettingsTabContent">
     <Grid>
@@ -30,7 +31,22 @@
                     <ComboBox MinWidth="150" x:Name="DefaultSelectedGameComboBox" 
                               Margin="15 0" SelectionChanged="OnChangeDefaultSelectedGame"
                               HorizontalAlignment="Right">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DataType=dataModel:ArcadeShineGame, Path=GameName}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
                     </ComboBox>
+                </DockPanel>
+                <DockPanel Margin="10">
+                    <CheckBox x:Name="AllowRandomGameSelectionCheckBox" Content="Allow random game selection on inactivity"
+                              IsCheckedChanged="AllowRandomGameSelectionCheckBox_OnIsCheckedChanged"/> 
+                </DockPanel>
+                <DockPanel Margin="10" IsEnabled="{Binding #AllowRandomGameSelectionCheckBox.IsChecked}">
+                    <TextBlock Text="Inactivity delay in seconds:" VerticalAlignment="Center"/>
+                    <TextBox MinWidth="150" x:Name="SecondsBeforeRandomGameSelectionTextBox" 
+                              Margin="15 0" TextChanged="SecondsBeforeRandomGameSelectionTextBox_OnTextChanged"
+                              HorizontalAlignment="Right"/>
                 </DockPanel>
             </StackPanel>
         </DockPanel>
@@ -38,47 +54,64 @@
             <TextBlock DockPanel.Dock="Top" HorizontalAlignment="Left" TextAlignment="Left" Text="Input Mapping" FontWeight="Bold" Margin="0 25"/>
             <DockPanel DockPanel.Dock="Top" Margin="15 10" HorizontalAlignment="Stretch">
                 <TextBlock Width="180" Text="Menu Up:" VerticalAlignment="Center" />
-                <Button MinWidth="150" x:Name="MenuUpButton"
-                          Margin="15 0"
-                          HorizontalAlignment="Left"/>
+                <Button MinWidth="150" x:Name="MenuUpButton" Click="InputMappingButton_OnClick"
+                        Margin="15 0"
+                        HorizontalAlignment="Left"/>
             </DockPanel>
             <DockPanel DockPanel.Dock="Top" Margin="15 10" HorizontalAlignment="Stretch">
                 <TextBlock Width="180" Text="Menu Down:" VerticalAlignment="Center" />
-                <Button MinWidth="150" x:Name="MenuDownButton"
+                <Button MinWidth="150" x:Name="MenuDownButton" Click="InputMappingButton_OnClick"
                         Margin="15 0"
                         HorizontalAlignment="Left"/>
             </DockPanel>
             <DockPanel DockPanel.Dock="Top" Margin="15 10" HorizontalAlignment="Stretch">
                 <TextBlock Width="180" Text="Menu Left:" VerticalAlignment="Center" />
-                <Button MinWidth="150" x:Name="MenuLeftButton"
+                <Button MinWidth="150" x:Name="MenuLeftButton" Click="InputMappingButton_OnClick"
                         Margin="15 0"
                         HorizontalAlignment="Left"/>
             </DockPanel>
             <DockPanel DockPanel.Dock="Top" Margin="15 10" HorizontalAlignment="Stretch">
                 <TextBlock Width="180" Text="Menu Right:" VerticalAlignment="Center" />
-                <Button MinWidth="150" x:Name="MenuRightButton"
+                <Button MinWidth="150" x:Name="MenuRightButton" Click="InputMappingButton_OnClick"
                         Margin="15 0"
                         HorizontalAlignment="Left"/>
             </DockPanel>
             <DockPanel DockPanel.Dock="Top" Margin="15 10" HorizontalAlignment="Stretch">
                 <TextBlock Width="180" Text="Menu Select:" VerticalAlignment="Center" />
-                <Button MinWidth="150" x:Name="MenuSelectButton"
+                <Button MinWidth="150" x:Name="MenuSelectButton" Click="InputMappingButton_OnClick"
                         Margin="15 0"
                         HorizontalAlignment="Left"/>
             </DockPanel>
             <DockPanel DockPanel.Dock="Top" Margin="15 10" HorizontalAlignment="Stretch">
                 <TextBlock Width="180" Text="Menu Back:" VerticalAlignment="Center" />
-                <Button MinWidth="150" x:Name="MenuBackButton"
+                <Button MinWidth="150" x:Name="MenuBackButton" Click="InputMappingButton_OnClick"
                         Margin="15 0"
                         HorizontalAlignment="Left"/>
             </DockPanel>
             <DockPanel DockPanel.Dock="Top" Margin="15 10" HorizontalAlignment="Stretch">
                 <TextBlock Width="180" Text="Exit Game:" VerticalAlignment="Center" />
-                <Button MinWidth="150" x:Name="ExitGameButton"
+                <Button MinWidth="150" x:Name="ExitGameButton" Click="InputMappingButton_OnClick"
                         Margin="15 0"
                         HorizontalAlignment="Left"/>
             </DockPanel>
-            <TextBlock DockPanel.Dock="Top"/>
+            <TextBox x:Name="WaitInputText" DockPanel.Dock="Top" HorizontalAlignment="Left" TextAlignment="Left" 
+                     Background="Transparent" Foreground="Transparent" BorderThickness="0" KeyDown="WaitInputText_OnKeyDown">
+                <TextBox.Styles>
+                    <Style Selector="TextBox">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderBrush" Value="Transparent"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Style Selector="^:pointerover">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderBrush" Value="Transparent"/>
+                        </Style>
+                        <Style Selector="^:focus">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderBrush" Value="Transparent"/>
+                        </Style>
+                    </Style>
+                </TextBox.Styles>
+            </TextBox>
         </DockPanel>
     </Grid>
 </UserControl>

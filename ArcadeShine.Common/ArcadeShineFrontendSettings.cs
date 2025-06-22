@@ -32,7 +32,11 @@ public class ArcadeShineFrontendSettings
     public string LastSelectedGame { get; set; } = "";
     
     public string DefaultSelectedGame { get; set; } = "";
+
+    public bool AllowInactivityMode { get; set; } = true;
     
+    public int SecondsBeforeRandomGameSelectionInactivityMode { get; set; } = 300;
+
     public static ArcadeShineFrontendSettings Load()
     {
         if (!File.Exists("ArcadeShineFrontendSettings.json"))
