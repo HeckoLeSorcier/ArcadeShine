@@ -1,5 +1,5 @@
 # Arcade Shine
-[![.NET](https://github.com/HeckoLeSorcier/ArcadeShine/actions/workflows/dotnet.yml/badge.svg)](https://github.com/HeckoLeSorcier/ArcadeShine/actions/workflows/dotnet.yml)
+[![.NET](https://github.com/HeckoLeSorcier/ArcadeShine/actions/workflows/dotnet.yml/badge.svg)](https://github.com/HeckoLeSorcier/ArcadeShine/actions/workflows/dotnet.yml) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 This project is a software I developed for my own arcade cabinet. I decided to share my work under a GNU GPL v3 licence.
 
