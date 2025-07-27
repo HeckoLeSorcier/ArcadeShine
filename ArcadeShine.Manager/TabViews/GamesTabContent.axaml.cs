@@ -7,6 +7,7 @@ using ArcadeShine.Common.DataModel;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
@@ -263,5 +264,12 @@ public partial class GamesTabContent : UserControl
             var absolutePath = HttpUtility.UrlDecode(result[0].Path.AbsolutePath, Encoding.UTF8);
             GameRomFileTextBox.Text = absolutePath;
         }
+    }
+
+    private void InputElement_OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        var textBlock = sender as TextBlock;
+        textBlock.Focusable = true;
+        textBlock?.Focus();
     }
 }

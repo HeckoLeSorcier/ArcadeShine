@@ -23,38 +23,40 @@ namespace ArcadeShine.Frontend;
 public partial class MainWindow : Window
 {
     private readonly LibVLC _libVlc = new LibVLC();
-    
-    private int _currentSystemIndex = 0;
-    
-    private int _currentGameIndex = 0;
 
-    private List<ArcadeShineGame> _currentCategoryGames;
+    private int _currentSystemIndex;
 
-    public Dictionary<InputActionEnum, Key> InputActionMap = new Dictionary<InputActionEnum, Key>();
+    private int _currentGameIndex;
+
+    private List<ArcadeShineGame> _currentCategoryGames = null!;
+
+    private readonly Dictionary<InputActionEnum, Key> _inputActionMap = new Dictionary<InputActionEnum, Key>();
     
-    private Animation _animationCurrentSystemDisappearToLeftSide;
-    private Animation _animationNextSystemLogoAppearFromRightSide;
-    private Animation _animationCurrentSystemDisappearToRightSide;
-    private Animation _animationPreviousSystemAppearFromLeftSide;
+    private Animation _animationCurrentSystemDisappearToLeftSide = null!;
+    private Animation _animationNextSystemLogoAppearFromRightSide = null!;
+    private Animation _animationCurrentSystemDisappearToRightSide = null!;
+    private Animation _animationPreviousSystemAppearFromLeftSide = null!;
     
-    private Task _nextCategoryAnimationTask;
-    private Task _previousCategoryAnimationTask;
+    private Task _nextCategoryAnimationTask = null!;
+    private Task _previousCategoryAnimationTask = null!;
     
-    private Animation _animationCurrentGameDisappearToUpSide;
-    private Animation _animationNextGameLogoAppearFromBottomSide;
-    private Animation _animationCurrentGameDisappearToBottomSide;
-    private Animation _animationPreviousGameAppearFromUpSide;
+    private Animation _animationCurrentGameDisappearToUpSide = null!;
+    private Animation _animationNextGameLogoAppearFromBottomSide = null!;
+    private Animation _animationCurrentGameDisappearToBottomSide = null!;
+    private Animation _animationPreviousGameAppearFromUpSide = null!;
     
-    private Task _nextGameAnimationTask;
-    private Task _previousGameAnimationTask;
-    private Media _currentVideoMedia;
+    private Task _nextGameAnimationTask = null!;
+    private Task _previousGameAnimationTask = null!;
+    private Media _currentVideoMedia = null!;
     
-    private Animation _globalFadeOutAnimation;
-    private Animation _globalFadeInAnimation;
+    private Animation _globalFadeOutAnimation = null!;
+    private Animation _globalFadeInAnimation = null!;
     
-    private IDisposable _autoSelectRandomGameTimer;
-    private bool _isRandomizingGameSelection = false;
-    private bool _cancelRandomGameSelection = false;
+    private IDisposable _autoSelectRandomGameTimer = null!;
+    private bool _isRandomizingGameSelection;
+    private bool _cancelRandomGameSelection;
+    
+    private bool _isInGame;
     
     public MainWindow()
     {
@@ -65,11 +67,9 @@ public partial class MainWindow : Window
         MapInputs();
 
         var gameIsSelected = false;
-        string gameNameToSelect;
-        if (App.ArcadeShineFrontendSettings.PreserveLastSelectedGameOnExit)
-            gameNameToSelect = App.ArcadeShineFrontendSettings.LastSelectedGame;
-        else
-            gameNameToSelect = App.ArcadeShineFrontendSettings.DefaultSelectedGame;
+        var gameNameToSelect = App.ArcadeShineFrontendSettings.PreserveLastSelectedGameOnExit
+            ? App.ArcadeShineFrontendSettings.LastSelectedGame
+            : App.ArcadeShineFrontendSettings.DefaultSelectedGame;
         if (!string.IsNullOrEmpty(gameNameToSelect))
         {
             var selectedGame =
@@ -106,74 +106,81 @@ public partial class MainWindow : Window
 
     private async void SelectRandomGame()
     {
-        _isRandomizingGameSelection = true;
-        Dispatcher.UIThread.Invoke(() =>
+        try
         {
-            VideoView.IsVisible = false;
-            FadePanel.Opacity = 1.0;
-        });
-        await _globalFadeOutAnimation.RunAsync(FadePanel);
-        if (_cancelRandomGameSelection)
-        {
-            CancelRandomGameSelection();
-            return;       
+            _isRandomizingGameSelection = true;
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                VideoView.IsVisible = false;
+                FadePanel.Opacity = 1.0;
+            });
+            await _globalFadeOutAnimation.RunAsync(FadePanel);
+            if (_cancelRandomGameSelection)
+            {
+                CancelRandomGameSelection();
+                return;       
+            }
+            await Task.Delay(TimeSpan.FromSeconds(0.5));
+            if (_cancelRandomGameSelection)
+            {
+                CancelRandomGameSelection();
+                return;       
+            }
+            var currentGameListIndex = App.ArcadeShineGameList.IndexOf(_currentCategoryGames[_currentGameIndex]);
+            Random random = new Random();
+            var randomGameIndex = random.Next(0, App.ArcadeShineGameList.Count);
+            while (currentGameListIndex == randomGameIndex)
+            {
+                randomGameIndex = random.Next(0, App.ArcadeShineGameList.Count);
+            }
+            if (_cancelRandomGameSelection)
+            {
+                CancelRandomGameSelection();
+                return;       
+            }
+            var randomGame = App.ArcadeShineGameList[randomGameIndex];
+            var randomGameSystem = App.ArcadeShineSystemList.FirstOrDefault(s => s.SystemIdentifier == randomGame.GameSystem);
+            if (randomGameSystem != null)
+                _currentSystemIndex = App.ArcadeShineSystemList.IndexOf(randomGameSystem);
+            if (_cancelRandomGameSelection)
+            {
+                CancelRandomGameSelection();
+                return;       
+            }
+            UpdateCategory();
+            if (_cancelRandomGameSelection)
+            {
+                CancelRandomGameSelection();
+                return;       
+            }
+            _currentGameIndex = _currentCategoryGames.IndexOf(randomGame);
+            UpdateGame();
+            if (_cancelRandomGameSelection)
+            {
+                CancelRandomGameSelection();
+                return;       
+            }
+            await Task.Delay(TimeSpan.FromSeconds(0.5));
+            if (_cancelRandomGameSelection)
+            {
+                CancelRandomGameSelection();
+                return;       
+            }
+            await _globalFadeInAnimation.RunAsync(FadePanel);
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                FadePanel.Opacity = 0.0;
+                VideoView.IsVisible = true;
+            });
+            _autoSelectRandomGameTimer.Dispose();
+            _autoSelectRandomGameTimer = DispatcherTimer.RunOnce(SelectRandomGame,
+                TimeSpan.FromSeconds(App.ArcadeShineFrontendSettings.SecondsBeforeRandomGameSelectionInactivityMode));
+            _isRandomizingGameSelection = false;
         }
-        await Task.Delay(TimeSpan.FromSeconds(0.5));
-        if (_cancelRandomGameSelection)
+        catch (Exception)
         {
-            CancelRandomGameSelection();
-            return;       
+            //ignored
         }
-        var currentGameListIndex = App.ArcadeShineGameList.IndexOf(_currentCategoryGames[_currentGameIndex]);
-        Random random = new Random();
-        var randomGameIndex = random.Next(0, App.ArcadeShineGameList.Count);
-        while (currentGameListIndex == randomGameIndex)
-        {
-            randomGameIndex = random.Next(0, App.ArcadeShineGameList.Count);
-        }
-        if (_cancelRandomGameSelection)
-        {
-            CancelRandomGameSelection();
-            return;       
-        }
-        var randomGame = App.ArcadeShineGameList[randomGameIndex];
-        var randomGameSystem = App.ArcadeShineSystemList.FirstOrDefault(s => s.SystemIdentifier == randomGame.GameSystem);
-        if (randomGameSystem != null)
-            _currentSystemIndex = App.ArcadeShineSystemList.IndexOf(randomGameSystem);
-        if (_cancelRandomGameSelection)
-        {
-            CancelRandomGameSelection();
-            return;       
-        }
-        UpdateCategory();
-        if (_cancelRandomGameSelection)
-        {
-            CancelRandomGameSelection();
-            return;       
-        }
-        _currentGameIndex = _currentCategoryGames.IndexOf(randomGame);
-        UpdateGame();
-        if (_cancelRandomGameSelection)
-        {
-            CancelRandomGameSelection();
-            return;       
-        }
-        await Task.Delay(TimeSpan.FromSeconds(0.5));
-        if (_cancelRandomGameSelection)
-        {
-            CancelRandomGameSelection();
-            return;       
-        }
-        await _globalFadeInAnimation.RunAsync(FadePanel);
-        Dispatcher.UIThread.Invoke(() =>
-        {
-            FadePanel.Opacity = 0.0;
-            VideoView.IsVisible = true;
-        });
-        _autoSelectRandomGameTimer.Dispose();
-        _autoSelectRandomGameTimer = DispatcherTimer.RunOnce(SelectRandomGame,
-            TimeSpan.FromSeconds(App.ArcadeShineFrontendSettings.SecondsBeforeRandomGameSelectionInactivityMode));
-        _isRandomizingGameSelection = false;
     }
 
     private void CancelRandomGameSelection()
@@ -190,18 +197,18 @@ public partial class MainWindow : Window
 
     private void MapInputs()
     {
-        InputActionMap.Add(InputActionEnum.NavigateUpAction, (Key)Enum.Parse(typeof(Key), App.ArcadeShineFrontendSettings.UpKey));
-        InputActionMap.Add(InputActionEnum.NavigateDownAction, (Key)Enum.Parse(typeof(Key), App.ArcadeShineFrontendSettings.DownKey));
-        InputActionMap.Add(InputActionEnum.NavigateLeftAction, (Key)Enum.Parse(typeof(Key), App.ArcadeShineFrontendSettings.LeftKey));
-        InputActionMap.Add(InputActionEnum.NavigateRightAction, (Key)Enum.Parse(typeof(Key), App.ArcadeShineFrontendSettings.RightKey));
-        InputActionMap.Add(InputActionEnum.SelectAction, (Key)Enum.Parse(typeof(Key), App.ArcadeShineFrontendSettings.EnterKey));
-        InputActionMap.Add(InputActionEnum.BackAction, (Key)Enum.Parse(typeof(Key), App.ArcadeShineFrontendSettings.BackKey));
-        InputActionMap.Add(InputActionEnum.ExitAction, (Key)Enum.Parse(typeof(Key), App.ArcadeShineFrontendSettings.ExitKey));
+        _inputActionMap.Add(InputActionEnum.NavigateUpAction, (Key)Enum.Parse(typeof(Key), App.ArcadeShineFrontendSettings.UpKey));
+        _inputActionMap.Add(InputActionEnum.NavigateDownAction, (Key)Enum.Parse(typeof(Key), App.ArcadeShineFrontendSettings.DownKey));
+        _inputActionMap.Add(InputActionEnum.NavigateLeftAction, (Key)Enum.Parse(typeof(Key), App.ArcadeShineFrontendSettings.LeftKey));
+        _inputActionMap.Add(InputActionEnum.NavigateRightAction, (Key)Enum.Parse(typeof(Key), App.ArcadeShineFrontendSettings.RightKey));
+        _inputActionMap.Add(InputActionEnum.SelectAction, (Key)Enum.Parse(typeof(Key), App.ArcadeShineFrontendSettings.EnterKey));
+        _inputActionMap.Add(InputActionEnum.BackAction, (Key)Enum.Parse(typeof(Key), App.ArcadeShineFrontendSettings.BackKey));
+        _inputActionMap.Add(InputActionEnum.ExitAction, (Key)Enum.Parse(typeof(Key), App.ArcadeShineFrontendSettings.ExitKey));
     }
     
-    private async void OnKeyDown(object? sender, KeyEventArgs e)
+    private void OnKeyDown(object? sender, KeyEventArgs e)
     {
-        if (InputActionMap.ContainsValue(e.Key))
+        if (_inputActionMap.ContainsValue(e.Key))
         {
             if (App.ArcadeShineFrontendSettings.AllowInactivityMode)
             {
@@ -214,7 +221,7 @@ public partial class MainWindow : Window
                 }
             }
             InputActionEnum? action = null;
-            foreach (var kvp in InputActionMap)
+            foreach (var kvp in _inputActionMap)
             {
                 if (kvp.Value.Equals(e.Key))
                 {
@@ -294,7 +301,7 @@ public partial class MainWindow : Window
 
                             UpdateCategory();
                             _previousCategoryAnimationTask = LaunchPreviousCategoryAnimations();
-                            _previousCategoryAnimationTask.ContinueWith(_ => UpdateGame());
+                            _ = _previousCategoryAnimationTask.ContinueWith(_ => UpdateGame());
                         }
                         break;
                     case InputActionEnum.NavigateRightAction:
@@ -318,7 +325,7 @@ public partial class MainWindow : Window
 
                             UpdateCategory();
                             _nextCategoryAnimationTask = LaunchNextCategoryAnimations();
-                            _nextCategoryAnimationTask.ContinueWith(_ => UpdateGame());
+                            _ = _nextCategoryAnimationTask.ContinueWith(_ => UpdateGame());
                         }
                         break;
                     case InputActionEnum.SelectAction:
@@ -335,49 +342,58 @@ public partial class MainWindow : Window
 
     private async void LaunchCurrentSelectedGame()
     {
-        PauseVideo();
-        CancelVideoPlay();
-        _autoSelectRandomGameTimer.Dispose();
-        Dispatcher.UIThread.Invoke(() =>
+        try
         {
-            VideoView.IsVisible = false;
-            FadePanel.Opacity = 1.0;
-        });
-        await _globalFadeOutAnimation.RunAsync(FadePanel);
-        Dispatcher.UIThread.Invoke(() =>
-        {
-            LoadingPanel.IsVisible = true;
-        });
+            _isInGame = true;
+            PauseVideo();
+            CancelVideoPlay();
+            _autoSelectRandomGameTimer.Dispose();
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                VideoView.IsVisible = false;
+                FadePanel.Opacity = 1.0;
+            });
+            await _globalFadeOutAnimation.RunAsync(FadePanel);
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                LoadingPanel.IsVisible = true;
+            });
         
-        await Task.Delay(TimeSpan.FromSeconds(0.5));
+            await Task.Delay(TimeSpan.FromSeconds(0.5));
         
-        // Create a new process
-        Process process = new Process();
-        // Set the process start info
-        process.StartInfo.FileName = App.ArcadeShineSystemList[_currentSystemIndex].SystemExecutable; // specify the command to run
-        var arguments = App.ArcadeShineSystemList[_currentSystemIndex].SystemExecutableArguments.Replace("{GAME_FILE}", _currentCategoryGames[_currentGameIndex].GameRomFile);
-        process.StartInfo.Arguments = arguments; // specify the arguments
-        // Set additional process start info as necessary
-        process.StartInfo.UseShellExecute = false;
-        process.StartInfo.CreateNoWindow = true;
-        process.StartInfo.RedirectStandardOutput = true;
-        // Start the process
-        process.Start();
-        // Wait for the process to exit
-        await process.WaitForExitAsync();
-        Dispatcher.UIThread.Invoke(() =>
+            // Create a new process
+            Process process = new Process();
+            // Set the process start info
+            process.StartInfo.FileName = App.ArcadeShineSystemList[_currentSystemIndex].SystemExecutable; // specify the command to run
+            var arguments = App.ArcadeShineSystemList[_currentSystemIndex].SystemExecutableArguments.Replace("{GAME_FILE}", _currentCategoryGames[_currentGameIndex].GameRomFile);
+            process.StartInfo.Arguments = arguments; // specify the arguments
+            // Set additional process start info as necessary
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.RedirectStandardOutput = true;
+            // Start the process
+            process.Start();
+            // Wait for the process to exit
+            await process.WaitForExitAsync();
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                LoadingPanel.IsVisible = false;
+            });
+            await _globalFadeInAnimation.RunAsync(FadePanel);
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                FadePanel.Opacity = 0.0;
+                VideoView.IsVisible = true;
+            });
+            _isInGame = false;
+            ThreadPool.QueueUserWorkItem(_ => VideoView.MediaPlayer?.Play(_currentVideoMedia));
+            _autoSelectRandomGameTimer = DispatcherTimer.RunOnce(SelectRandomGame,
+                TimeSpan.FromSeconds(App.ArcadeShineFrontendSettings.SecondsBeforeRandomGameSelectionInactivityMode));
+        }
+        catch (Exception)
         {
-            LoadingPanel.IsVisible = false;
-        });
-        await _globalFadeInAnimation.RunAsync(FadePanel);
-        Dispatcher.UIThread.Invoke(() =>
-        {
-            FadePanel.Opacity = 0.0;
-            VideoView.IsVisible = true;
-        });
-        ThreadPool.QueueUserWorkItem(_ => VideoView.MediaPlayer.Play(_currentVideoMedia));
-        _autoSelectRandomGameTimer = DispatcherTimer.RunOnce(SelectRandomGame,
-            TimeSpan.FromSeconds(App.ArcadeShineFrontendSettings.SecondsBeforeRandomGameSelectionInactivityMode));
+            // ignored
+        }
     }
 
     private async Task LaunchNextCategoryAnimations()
@@ -467,7 +483,7 @@ public partial class MainWindow : Window
             PreviousGameLogoImage.Source = previousGameLogo;
             GameBackground.Source = gameBackground;
             GameDescriptionTextBlock.Text = _currentCategoryGames[_currentGameIndex].GameDescription;
-            if(_currentCategoryGames[_currentGameIndex].GameGenres != null && _currentCategoryGames[_currentGameIndex].GameGenres.Count > 0)
+            if(_currentCategoryGames[_currentGameIndex].GameGenres.Count > 0)
                 GameGenresTextBlock.Text = _currentCategoryGames[_currentGameIndex].GameGenres.Aggregate((a, b) => $"{a}, {b}");
             GameDeveloperTextBlock.Text = _currentCategoryGames[_currentGameIndex].GameDeveloper;
             GameYearTextBlock.Text = _currentCategoryGames[_currentGameIndex].GameReleaseYear;
@@ -658,7 +674,7 @@ public partial class MainWindow : Window
         });
     }
 
-    public void Play()
+    private void Play()
     {
         if (Design.IsDesignMode)
         {
@@ -678,7 +694,7 @@ public partial class MainWindow : Window
 
     private void MediaPlayerOnEndReached(object? sender, EventArgs e)
     {
-        ThreadPool.QueueUserWorkItem(_ => VideoView.MediaPlayer.Play(_currentVideoMedia));
+        ThreadPool.QueueUserWorkItem(_ => VideoView.MediaPlayer?.Play(_currentVideoMedia));
     }
 
     private void PlayCurrentGameVideo()
@@ -688,7 +704,11 @@ public partial class MainWindow : Window
             VideoView.Margin = _currentCategoryGames[_currentGameIndex].GameVideoAspectRatio == "16:9"
                 ? Thickness.Parse("84 40")
                 : Thickness.Parse("208 40"));
-        ThreadPool.QueueUserWorkItem(_ => VideoView.MediaPlayer?.Play(_currentVideoMedia));
+        ThreadPool.QueueUserWorkItem(_ =>
+        {
+            if(!_isInGame)
+                VideoView.MediaPlayer?.Play(_currentVideoMedia);
+        });
     }
 
     private void CancelVideoPlay()
@@ -699,12 +719,5 @@ public partial class MainWindow : Window
     private void PauseVideo()
     {
         VideoView.MediaPlayer?.Pause();
-    }
-   
-    public void Dispose()
-    {
-        CancelVideoPlay();
-        VideoView.MediaPlayer?.Dispose();
-        _libVlc?.Dispose();
     }
 }

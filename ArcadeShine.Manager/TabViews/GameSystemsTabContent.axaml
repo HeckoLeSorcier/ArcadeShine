@@ -8,6 +8,7 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="10*"/>
         </Grid.ColumnDefinitions>
         <DockPanel Grid.Column="0">
@@ -22,7 +23,8 @@
                 </ListBox.ItemTemplate>
             </ListBox>
         </DockPanel>
-        <DockPanel Grid.Column="1" HorizontalAlignment="Stretch" Margin="10" 
+        <GridSplitter Grid.Column="1" ShowsPreview="True" />
+        <DockPanel Grid.Column="2" HorizontalAlignment="Stretch" Margin="10" 
                    VerticalAlignment="Stretch" x:Name="GameSystemDetailPanel">
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button Content="Save" Margin="5 0" Background="#BB99FF" 

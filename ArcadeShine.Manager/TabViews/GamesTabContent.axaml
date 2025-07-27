@@ -8,12 +8,37 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="10*"/>
         </Grid.ColumnDefinitions>
-        <DockPanel Grid.Column="0">
+        <DockPanel Grid.Column="0" >
             <Button DockPanel.Dock="Bottom" Content="Add" Margin="15" HorizontalAlignment="Stretch"
-                    Click="AddGameButton_OnClick"/>
-            <ListBox x:Name="GameListBox" DockPanel.Dock="Top" Margin="0 25 0 0"
+                    Click="AddGameButton_OnClick" />
+            <ScrollViewer DockPanel.Dock="Top" Margin="0 25 0 0" >
+                <StackPanel Orientation="Vertical">
+                    <Expander Header="Expander 2" BorderThickness="0">
+                        <StackPanel Orientation="Vertical">
+                            <StackPanel.Styles>
+                                <Style Selector="TextBlock">
+                                    <Setter Property="Padding" Value="12 8" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                </Style>
+                                <Style Selector="TextBlock:focus">
+                                    <Setter Property="Padding" Value="12 8" />
+                                    <Setter Property="Background" Value="#ffeaf5ff" />
+                                    <Setter Property="Foreground" Value="#ff1c1f23" />
+                                </Style>
+                                <Style Selector="TextBlock:pointerover">
+                                    <Setter Property="Padding" Value="12 8" />
+                                    <Setter Property="Background" Value="#112e3238" />
+                                    <Setter Property="Foreground" Value="#ff1c1f23" />
+                                </Style>
+                            </StackPanel.Styles>
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </ScrollViewer>
+            <ListBox IsVisible="False" x:Name="GameListBox" DockPanel.Dock="Top" Margin="0 25 0 0"
                      x:DataType="dataModel:ArcadeShineGame" SelectionChanged="GameListBox_OnSelectionChanged">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
@@ -22,7 +47,8 @@
                 </ListBox.ItemTemplate>
             </ListBox>
         </DockPanel>
-        <ScrollViewer Grid.Column="1" HorizontalAlignment="Stretch" Margin="10" 
+        <GridSplitter Grid.Column="1" ShowsPreview="True" />
+        <ScrollViewer Grid.Column="2" HorizontalAlignment="Stretch" Margin="10" 
                       VerticalAlignment="Stretch">
             <DockPanel x:Name="GameDetailPanel">
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center">
