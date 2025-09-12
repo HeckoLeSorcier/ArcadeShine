@@ -48,6 +48,10 @@
                               Margin="15 0" TextChanged="SecondsBeforeRandomGameSelectionTextBox_OnTextChanged"
                               HorizontalAlignment="Right"/>
                 </DockPanel>
+                <DockPanel Margin="10">
+                    <CheckBox x:Name="AllowWindowsToManageScreenSleepCheckBox" Content="Allow Windows OS to manage screen sleep"
+                              IsCheckedChanged="AllowWindowsToManageScreenSleepCheckBox_OnIsCheckedChanged"/> 
+                </DockPanel>
             </StackPanel>
         </DockPanel>
         <DockPanel Grid.Column="1" HorizontalAlignment="Stretch" Margin="10 0">

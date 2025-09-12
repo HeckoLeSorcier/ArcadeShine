@@ -58,6 +58,11 @@ public partial class MainWindow : Window
     
     private bool _isInGame;
     
+#if WINDOWS
+    [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
+#endif
+    
     public MainWindow()
     {
         InitializeComponent();
@@ -496,6 +501,12 @@ public partial class MainWindow : Window
     private void OnLoaded(object? sender, RoutedEventArgs e)
     {
         GenerateAnimations();
+#if WINDOWS
+        if(App.ArcadeShineFrontendSettings.AllowWindowsToManageScreenSleep)
+            SetThreadExecutionState(ES_CONTINUOUS);
+        else
+            SetThreadExecutionState(ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
+#endif
     }
 
     private void GenerateAnimations()

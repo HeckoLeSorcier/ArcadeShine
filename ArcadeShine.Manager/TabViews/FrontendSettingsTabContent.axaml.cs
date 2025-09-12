@@ -144,4 +144,11 @@ public partial class FrontendSettingsTabContent : UserControl
         App.ArcadeShineFrontendSettings.SecondsBeforeRandomGameSelectionInactivityMode = seconds;
         ArcadeShineFrontendSettings.Save(App.ArcadeShineFrontendSettings);
     }
+
+    private void AllowWindowsToManageScreenSleepCheckBox_OnIsCheckedChanged(object? sender, RoutedEventArgs e)
+    {
+        var checkBox = sender as CheckBox;
+        App.ArcadeShineFrontendSettings.AllowWindowsToManageScreenSleep = checkBox.IsChecked ?? false;
+        ArcadeShineFrontendSettings.Save(App.ArcadeShineFrontendSettings);
+    }
 }

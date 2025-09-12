@@ -4,7 +4,9 @@
     <option name="projectPerEditor">
       <map>
         <entry key="ArcadeShine.Frontend/App.axaml" value="ArcadeShine.Frontend/ArcadeShine.Frontend.csproj" />
+        <entry key="ArcadeShine.Frontend/GameSystemGamesExpander.axaml" value="ArcadeShine.Frontend/ArcadeShine.Frontend.csproj" />
         <entry key="ArcadeShine.Frontend/MainWindow.axaml" value="ArcadeShine.Frontend/ArcadeShine.Frontend.csproj" />
+        <entry key="ArcadeShine.Manager/GameSystemGamesExpander.axaml" value="ArcadeShine.Manager/ArcadeShine.Manager.csproj" />
         <entry key="ArcadeShine.Manager/MainWindow.axaml" value="ArcadeShine.Manager/ArcadeShine.Manager.csproj" />
         <entry key="ArcadeShine.Manager/TabViews/FrontendSettingsTabContent.axaml" value="ArcadeShine.Manager/ArcadeShine.Manager.csproj" />
         <entry key="ArcadeShine.Manager/TabViews/GameSystemsTabContent.axaml" value="ArcadeShine.Manager/ArcadeShine.Manager.csproj" />

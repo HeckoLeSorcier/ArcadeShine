@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -18,6 +19,10 @@ public partial class GamesTabContent : UserControl
 {
     private MainWindow _mainWindow;
     
+    private ArcadeShineGame? _selectedGame;
+    
+    private List<GameSystemGamesExpander> _gameSystemExpanders = new();
+    
     public GamesTabContent()
     {
         InitializeComponent();
@@ -25,41 +30,40 @@ public partial class GamesTabContent : UserControl
         {
             _mainWindow = desktop.MainWindow as MainWindow;
         }
-        
-        GameListBox.ItemsSource = App.ArcadeShineGameList;
-        GameListBox.SelectionMode = SelectionMode.Single;
-        if(GameListBox.ItemCount == 0)
-        {
-            GameDetailPanel.IsVisible = false;
-        }
-        if (_mainWindow.PreviousSelectedGameIndex != null)
-        {
-            GameListBox.SelectedIndex = _mainWindow.PreviousSelectedGameIndex.Value;
-            _mainWindow.PreviousSelectedGameIndex = null;       
-        }
-        else
-        {
-            GameListBox.SelectedIndex = 0;
-        }
+        LoadGameAndSystemList();
     }
 
-    private void ResetUi()
+    public void LoadGameAndSystemList()
     {
-        GameSystemComboBox.ItemsSource = null;
-        GameDisplayNameTextBox.Text = String.Empty;
-        GameRomFileTextBox.Text = String.Empty;
-        GameShortDescTextBox.Text = String.Empty;
-        GameDeveloperTextBox.Text = String.Empty;
-        GameReleaseYearTextBox.Text = String.Empty;
-        GameGenresTextBox.Text = String.Empty;
-        GameVideoAspectRatioComboBox.SelectedIndex = 0;
-        GameLogoFilename.Text = String.Empty;
-        GameLogoImage.Source = null;
-        GameBackgroundFilename.Text = String.Empty;
-        GameBackgroundImage.Source = null;
-        GameVideoTextBox.Text = String.Empty;
+        int index = 0;
+        foreach (var arcadeShineSystem in App.ArcadeShineSystemList.OrderBy(s => s.SystemDisplayName))
+        {
+            ArcadeShineGameList systemGames = new ArcadeShineGameList();
+            systemGames.AddRange(App.ArcadeShineGameList.Where(g => g.GameSystem == arcadeShineSystem.SystemIdentifier)
+                .OrderBy(g => g.GameName));
+            var systemExpander = new GameSystemGamesExpander(this, arcadeShineSystem, systemGames);
+            _gameSystemExpanders.Add(systemExpander);
+            GameSystemList.Children.Add(systemExpander);
+            if (index == 0)
+            {
+                systemExpander.GameListBox.SelectedIndex = 0;
+                systemExpander.Expander.IsExpanded = true;
+            }
+            index++;
+        }
     }
     
+    public void SelectGame(ArcadeShineGame game, GameSystemGamesExpander expanderSender)
+    {
+        foreach (var gameSystemExpander in _gameSystemExpanders)
+        {
+            if(gameSystemExpander != expanderSender)
+                gameSystemExpander.GameListBox.SelectedIndex = -1;
+        }
+        _selectedGame = game;
+        LoadGameUi(_selectedGame);
+    }
+
     private void LoadGameUi(ArcadeShineGame game)
     {
         ResetUi();
@@ -110,6 +114,23 @@ public partial class GamesTabContent : UserControl
         }
         GameVideoTextBox.Text = game.GameVideo;
     }
+
+    private void ResetUi()
+    {
+        GameSystemComboBox.ItemsSource = null;
+        GameDisplayNameTextBox.Text = String.Empty;
+        GameRomFileTextBox.Text = String.Empty;
+        GameShortDescTextBox.Text = String.Empty;
+        GameDeveloperTextBox.Text = String.Empty;
+        GameReleaseYearTextBox.Text = String.Empty;
+        GameGenresTextBox.Text = String.Empty;
+        GameVideoAspectRatioComboBox.SelectedIndex = 0;
+        GameLogoFilename.Text = String.Empty;
+        GameLogoImage.Source = null;
+        GameBackgroundFilename.Text = String.Empty;
+        GameBackgroundImage.Source = null;
+        GameVideoTextBox.Text = String.Empty;
+    }
     
     private void RedrawGameListBox()
     {
@@ -118,47 +139,43 @@ public partial class GamesTabContent : UserControl
 
     private void AddGameButton_OnClick(object? sender, RoutedEventArgs e)
     {
+        if (App.ArcadeShineSystemList.Count == 0) return;
         GameDetailPanel.IsVisible = true;
         var newGame = new ArcadeShineGame();
+        var firstSystem = App.ArcadeShineSystemList.OrderBy(s => s.SystemDisplayName).FirstOrDefault();
+        newGame.GameSystem = firstSystem.SystemIdentifier;
         App.ArcadeShineGameList.Add(newGame);
-        GameListBox.ItemsSource = App.ArcadeShineGameList;
-        _mainWindow.PreviousSelectedGameIndex = App.ArcadeShineGameList.Count - 1;
+        _mainWindow.PreviousSelectedGame = newGame;
         RedrawGameListBox();
-    }
-
-    private void GameListBox_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
-    {
-        LoadGameUi(App.ArcadeShineGameList[GameListBox.SelectedIndex]);
     }
 
     private void SaveGameListFile()
     {
-        var game = App.ArcadeShineGameList[GameListBox.SelectedIndex];
-        game.GameName = GameDisplayNameTextBox.Text!;
-        game.GameRomFile = GameRomFileTextBox.Text!;
-        game.GameDescription = GameShortDescTextBox.Text!;
+        _selectedGame.GameName = GameDisplayNameTextBox.Text!;
+        _selectedGame.GameRomFile = GameRomFileTextBox.Text!;
+        _selectedGame.GameDescription = GameShortDescTextBox.Text!;
         if(GameSystemComboBox.ItemCount > 0 && GameSystemComboBox.SelectedIndex >= 0)
-            game.GameSystem = ((ArcadeShineSystem)GameSystemComboBox.SelectedValue).SystemIdentifier;
-        game.GameLogo = GameLogoFilename.Text!;
-        game.GameBackgroundPicture = GameBackgroundFilename.Text!;
-        game.GameVideo = GameVideoTextBox.Text!;
+            _selectedGame.GameSystem = ((ArcadeShineSystem)GameSystemComboBox.SelectedValue).SystemIdentifier;
+        _selectedGame.GameLogo = GameLogoFilename.Text!;
+        _selectedGame.GameBackgroundPicture = GameBackgroundFilename.Text!;
+        _selectedGame.GameVideo = GameVideoTextBox.Text!;
         switch (GameVideoAspectRatioComboBox.SelectedIndex)
         {
             case 0:
-                game.GameVideoAspectRatio = "16:9";
+                _selectedGame.GameVideoAspectRatio = "16:9";
                 break;
             case 1:
-                game.GameVideoAspectRatio = "4:3";
+                _selectedGame.GameVideoAspectRatio = "4:3";
                 break;
             default:
-                game.GameVideoAspectRatio = "16:9";
+                _selectedGame.GameVideoAspectRatio = "16:9";
                 break;           
         }
-        game.GameReleaseYear = GameReleaseYearTextBox.Text!;
-        game.GameDeveloper = GameDeveloperTextBox.Text!;
-        game.GameGenres = GameGenresTextBox.Text?.Replace(" ", string.Empty).Split(',').ToList();
+        _selectedGame.GameReleaseYear = GameReleaseYearTextBox.Text!;
+        _selectedGame.GameDeveloper = GameDeveloperTextBox.Text!;
+        _selectedGame.GameGenres = GameGenresTextBox.Text?.Replace(" ", string.Empty).Split(',').ToList();
         ArcadeShineGameList.Save(App.ArcadeShineFrontendSettings.GameLibraryPath, App.ArcadeShineGameList);
-        _mainWindow.PreviousSelectedGameIndex = GameListBox.SelectedIndex;
+        _mainWindow.PreviousSelectedGame = _selectedGame;
         RedrawGameListBox();
     }
     
@@ -169,10 +186,7 @@ public partial class GamesTabContent : UserControl
 
     private void DeleteGameFromGameListFile()
     {
-        var game = App.ArcadeShineGameList[GameListBox.SelectedIndex];
-        GameListBox.SelectedIndex = 0;
-        App.ArcadeShineGameList.Remove(game);
-        GameListBox.ItemsSource = App.ArcadeShineGameList;
+        App.ArcadeShineGameList.Remove(_selectedGame);
         ArcadeShineGameList.Save(App.ArcadeShineFrontendSettings.GameLibraryPath, App.ArcadeShineGameList);
         RedrawGameListBox();
     }

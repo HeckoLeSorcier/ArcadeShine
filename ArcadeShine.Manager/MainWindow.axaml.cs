@@ -10,7 +10,7 @@ namespace ArcadeShine.Manager;
 
 public partial class MainWindow : Window
 {
-    public int? PreviousSelectedGameIndex = null;
+    public ArcadeShineGame? PreviousSelectedGame = null;
     public int? PreviousSelectedSystemIndex = null;
     
     public MainWindow()
