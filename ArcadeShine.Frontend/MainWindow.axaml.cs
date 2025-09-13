@@ -10,6 +10,7 @@ using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -103,6 +104,8 @@ public partial class MainWindow : Window
 
         Loaded += OnLoaded;
         KeyDown += OnKeyDown;
+        ConfirmExitFrontendButton.Click += ConfirmExitFrontendButton_OnClick;
+        CancelExitFrontendButton.Click += CancelExitFrontendButton_OnClick;
 
         if (App.ArcadeShineFrontendSettings.AllowInactivityMode)
             _autoSelectRandomGameTimer = DispatcherTimer.RunOnce(SelectRandomGame,
@@ -334,11 +337,30 @@ public partial class MainWindow : Window
                         }
                         break;
                     case InputActionEnum.SelectAction:
-                        LaunchCurrentSelectedGame();
+                        if (!ExitConfirmationPanel.IsVisible)
+                        {
+                            LaunchCurrentSelectedGame();
+                        }
+                        else
+                        {
+                            ShutdownArcadeShineFrontend();
+                        }
                         break;
                     case InputActionEnum.BackAction:
+                        if (ExitConfirmationPanel.IsVisible)
+                        {
+                            CloseExitConfirmationPopup();
+                        }
                         break;
                     case InputActionEnum.ExitAction:
+                        if(!ExitConfirmationPanel.IsVisible)
+                        {
+                            OpenExitConfirmationPopup();
+                        }
+                        else
+                        {
+                            CloseExitConfirmationPopup();
+                        }
                         break;
                 }
             }
@@ -730,5 +752,50 @@ public partial class MainWindow : Window
     private void PauseVideo()
     {
         VideoView.MediaPlayer?.Pause();
+    }
+
+    private void OpenExitConfirmationPopup()
+    {
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            VideoView.IsVisible = false;
+        });
+        ExitConfirmationPanel.IsVisible = true;
+    }
+    
+    private void CloseExitConfirmationPopup()
+    {
+        ExitConfirmationPanel.IsVisible = false;
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            VideoView.IsVisible = true;
+        });
+    }
+
+    private void ConfirmExitFrontendButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (ExitConfirmationPanel.IsVisible)
+        {
+            ShutdownArcadeShineFrontend();
+        }
+    }
+
+    private void ShutdownArcadeShineFrontend()
+    {
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                desktop.Shutdown();
+            }
+        });
+    }
+
+    private void CancelExitFrontendButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (ExitConfirmationPanel.IsVisible)
+        {
+            CloseExitConfirmationPopup();
+        }
     }
 }

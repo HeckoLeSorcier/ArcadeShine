@@ -400,5 +400,25 @@
                 </Image.Styles>
             </Image>
         </Panel>
+        <Panel x:Name="ExitConfirmationPanel" Background="Transparent" IsVisible="False" ZIndex="10"
+               Height="260" Width="780">
+            <Border Background="Linen" CornerRadius="35">
+                <Border.Effect>
+                    <DropShadowEffect OffsetX="0" OffsetY="0" BlurRadius="90" Opacity="0.6" />
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock HorizontalAlignment="Stretch" Text="Exit Arcade Shine?"
+                               TextAlignment="Center" Foreground="BurlyWood" FontSize="36"
+                               FontWeight="Bold" FontFamily="{StaticResource PoetsenOneFont}"
+                               Margin="0 25 0 0"/>
+                    <StackPanel Margin="0 50 0 0" Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button x:Name="ConfirmExitFrontendButton" Content="Yes" FontSize="32" FontWeight="Bold" 
+                                Foreground="Black" Margin="50 0" />
+                        <Button x:Name="CancelExitFrontendButton" Content="No" FontSize="32" FontWeight="Bold" 
+                                Foreground="Black" Margin="50 0" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Panel>
     </Panel>
 </Window>

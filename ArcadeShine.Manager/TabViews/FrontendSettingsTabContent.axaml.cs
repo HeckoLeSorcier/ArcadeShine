@@ -60,6 +60,7 @@ public partial class FrontendSettingsTabContent : UserControl
         ExitGameButton.Content = App.ArcadeShineFrontendSettings.ExitKey;
         AllowRandomGameSelectionCheckBox.IsChecked = App.ArcadeShineFrontendSettings.AllowInactivityMode;
         SecondsBeforeRandomGameSelectionTextBox.Text = App.ArcadeShineFrontendSettings.SecondsBeforeRandomGameSelectionInactivityMode.ToString();
+        AllowWindowsToManageScreenSleepCheckBox.IsChecked = App.ArcadeShineFrontendSettings.AllowWindowsToManageScreenSleep;
     }
     
     private void OnChangeFrontedLanguage(object? sender, SelectionChangedEventArgs e)
@@ -108,9 +109,32 @@ public partial class FrontendSettingsTabContent : UserControl
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 lastInputMappingbutton.Content = lastKey.ToString();
-                App.ArcadeShineFrontendSettings.UpKey = lastKey.ToString();
-                ArcadeShineFrontendSettings.Save(App.ArcadeShineFrontendSettings);
             });
+            switch (lastInputMappingbutton.Name)
+            {
+                case "MenuUpButton":
+                    App.ArcadeShineFrontendSettings.UpKey = lastKey.ToString();
+                    break;
+                case "MenuDownButton":
+                    App.ArcadeShineFrontendSettings.DownKey = lastKey.ToString();
+                    break;
+                case "MenuLeftButton":
+                    App.ArcadeShineFrontendSettings.LeftKey = lastKey.ToString();
+                    break;
+                case "MenuRightButton":
+                    App.ArcadeShineFrontendSettings.RightKey = lastKey.ToString();
+                    break;
+                case "MenuSelectButton":
+                    App.ArcadeShineFrontendSettings.EnterKey = lastKey.ToString();
+                    break;
+                case "MenuBackButton":
+                    App.ArcadeShineFrontendSettings.BackKey = lastKey.ToString();
+                    break;
+                case "ExitGameButton":
+                    App.ArcadeShineFrontendSettings.ExitKey = lastKey.ToString();
+                    break;
+            }
+            ArcadeShineFrontendSettings.Save(App.ArcadeShineFrontendSettings);
             waitInput.Reset();
         });
     }
