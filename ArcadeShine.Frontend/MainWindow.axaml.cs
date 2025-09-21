@@ -126,7 +126,8 @@ public partial class MainWindow : Window
         gamepadPollTimer = new System.Timers.Timer(16); // 60Hz polling
         gamepadPollTimer.Elapsed += (s, e) =>
         {
-            ProcessLastGamepadButtonsPressed();
+            if(!_isInGame)
+                ProcessLastGamepadButtonsPressed();
         };
         gamepadPollTimer.Start();
 
