@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using ArcadeShine.Common.DataModel;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;

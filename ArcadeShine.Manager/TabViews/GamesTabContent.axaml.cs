@@ -46,8 +46,15 @@ public partial class GamesTabContent : UserControl
             GameSystemList.Children.Add(systemExpander);
             if (index == 0)
             {
-                systemExpander.GameListBox.SelectedIndex = 0;
-                systemExpander.Expander.IsExpanded = true;
+                if (systemGames.Count > 0)
+                {
+                    systemExpander.GameListBox.SelectedIndex = 0;
+                    systemExpander.Expander.IsExpanded = true;
+                }
+                else
+                {
+                    GameDetailPanel.IsVisible = false;
+                }
             }
             index++;
         }
@@ -61,12 +68,13 @@ public partial class GamesTabContent : UserControl
                 gameSystemExpander.GameListBox.SelectedIndex = -1;
         }
         _selectedGame = game;
-        LoadGameUi(_selectedGame);
+        LoadGameDetails(_selectedGame);
     }
 
-    private void LoadGameUi(ArcadeShineGame game)
+    private void LoadGameDetails(ArcadeShineGame game)
     {
-        ResetUi();
+        ResetGameDetails();
+        GameDetailPanel.IsVisible = true;
         GameSystemComboBox.ItemsSource = App.ArcadeShineSystemList;
         GameDisplayNameTextBox.Text = game.GameName;
         GameRomFileTextBox.Text = game.GameRomFile;
@@ -115,7 +123,7 @@ public partial class GamesTabContent : UserControl
         GameVideoTextBox.Text = game.GameVideo;
     }
 
-    private void ResetUi()
+    private void ResetGameDetails()
     {
         GameSystemComboBox.ItemsSource = null;
         GameDisplayNameTextBox.Text = String.Empty;

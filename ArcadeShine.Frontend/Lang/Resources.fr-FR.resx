@@ -25,7 +25,7 @@
         <value>Sélectionner un jeu</value>
     </data>
     <data name="TitleCount" xml:space="preserve">
-        <value>Titres total :</value>
+        <value>Nb. total de titres : </value>
     </data>
     <data name="TitleNumber" xml:space="preserve">
         <value>Titre n°</value>

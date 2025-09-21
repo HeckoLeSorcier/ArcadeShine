@@ -31,10 +31,6 @@ public partial class GameSystemGamesExpander : UserControl
         
         GameListBox.ItemsSource = _games;
         GameListBox.SelectionMode = SelectionMode.Single;
-        if(GameListBox.ItemCount == 0)
-        {
-            _gamesTabContent.GameDetailPanel.IsVisible = false;
-        }
         if (_mainWindow.PreviousSelectedGame != null && GameListBox.Items.Contains(_mainWindow.PreviousSelectedGame))
         {
             GameListBox.SelectedItem = _mainWindow.PreviousSelectedGame;

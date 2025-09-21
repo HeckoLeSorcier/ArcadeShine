@@ -18,6 +18,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using LibVLCSharp.Shared;
+using SDL2;
 
 namespace ArcadeShine.Frontend;
 
@@ -64,6 +65,9 @@ public partial class MainWindow : Window
     static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
 #endif
     
+    private IntPtr _gameControllerHandle;
+    private System.Timers.Timer gamepadPollTimer;
+    
     public MainWindow()
     {
         InitializeComponent();
@@ -107,9 +111,69 @@ public partial class MainWindow : Window
         ConfirmExitFrontendButton.Click += ConfirmExitFrontendButton_OnClick;
         CancelExitFrontendButton.Click += CancelExitFrontendButton_OnClick;
 
+        if (SDL.SDL_Init(SDL.SDL_INIT_GAMECONTROLLER) != 0)
+        {
+            throw new Exception("SDL2.SDL.SDL_Init(SDL2.SDL.SDL_INIT_GAMECONTROLLER) failed");
+        }
+
+        for (int i = 0 ; i < SDL.SDL_NumJoysticks() ; i++)
+        {
+            if (SDL.SDL_IsGameController(i) == SDL.SDL_bool.SDL_TRUE)
+            {
+                _gameControllerHandle = SDL.SDL_GameControllerOpen(i);
+            }
+        }
+        gamepadPollTimer = new System.Timers.Timer(16); // 60Hz polling
+        gamepadPollTimer.Elapsed += (s, e) =>
+        {
+            ProcessLastGamepadButtonsPressed();
+        };
+        gamepadPollTimer.Start();
+
         if (App.ArcadeShineFrontendSettings.AllowInactivityMode)
             _autoSelectRandomGameTimer = DispatcherTimer.RunOnce(SelectRandomGame,
                 TimeSpan.FromSeconds(App.ArcadeShineFrontendSettings.SecondsBeforeRandomGameSelectionInactivityMode));
+    }
+    
+    private void ProcessLastGamepadButtonsPressed()
+    {
+        SDL.SDL_PollEvent(out var sdlEvent);
+        switch (sdlEvent.type)
+        {
+            case SDL.SDL_EventType.SDL_CONTROLLERBUTTONDOWN:
+                Dispatcher.UIThread.Invoke(() =>
+                {
+                    if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_UP)
+                    {
+                        OnNavigateUpInputAction();
+                    }
+                    if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_DOWN)
+                    {
+                        OnNavigateDownInputAction();
+                    }
+                    if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_LEFT)
+                    {
+                        OnNavigateLeftInputAction();
+                    }
+                    if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_RIGHT)
+                    {
+                        OnNavigateRightInputAction();
+                    }
+                    if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_A)
+                    {
+                        OnSelectInputAction();
+                    }
+                    if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_B)
+                    {
+                        OnBackInputAction();
+                    }
+                    if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_BACK)
+                    {
+                        OnExitInputAction();
+                    }
+                });
+                break;
+        }
     }
 
     private async void SelectRandomGame()
@@ -243,127 +307,162 @@ public partial class MainWindow : Window
                 switch (action)
                 {
                     case InputActionEnum.NavigateUpAction:
-                        if (_previousGameAnimationTask is null or { IsCompleted: true })
-                        {
-                            if (_currentCategoryGames.Count == 0)
-                            {
-                                _currentGameIndex = 0;
-                            }
-                            else
-                            {
-                                if (_currentGameIndex == 0)
-                                {
-                                    _currentGameIndex = _currentCategoryGames.Count - 1;
-                                }
-                                else
-                                {
-                                    _currentGameIndex--;
-                                }
-                            }
-
-                            UpdateGame();
-                            _previousGameAnimationTask = LaunchPreviousGameAnimations();
-                        }
+                        OnNavigateUpInputAction();
                         break;
                     case InputActionEnum.NavigateDownAction:
-                        if (_nextGameAnimationTask is null or { IsCompleted: true })
-                        {
-                            if (_currentCategoryGames.Count == 0)
-                            {
-                                _currentGameIndex = 0;
-                            }
-                            else
-                            {
-                                if (_currentGameIndex == _currentCategoryGames.Count - 1)
-                                {
-                                    _currentGameIndex = 0;
-                                }
-                                else
-                                {
-                                    _currentGameIndex++;
-                                }
-                            }
-
-                            UpdateGame();
-                            _nextGameAnimationTask = LaunchNextGameAnimations();
-                        }
+                        OnNavigateDownInputAction();
                         break;
                     case InputActionEnum.NavigateLeftAction:
-                        if (_previousCategoryAnimationTask is null or { IsCompleted: true })
-                        {
-                            if (App.ArcadeShineSystemList.Count == 0)
-                            {
-                                _currentSystemIndex = 0;
-                            }
-                            else
-                            {
-                                if (_currentSystemIndex == 0)
-                                {
-                                    _currentSystemIndex = App.ArcadeShineSystemList.Count - 1;
-                                }
-                                else
-                                {
-                                    _currentSystemIndex--;
-                                }
-                            }
-
-                            UpdateCategory();
-                            _previousCategoryAnimationTask = LaunchPreviousCategoryAnimations();
-                            _ = _previousCategoryAnimationTask.ContinueWith(_ => UpdateGame());
-                        }
+                        OnNavigateLeftInputAction();
                         break;
                     case InputActionEnum.NavigateRightAction:
-                        if (_nextCategoryAnimationTask is null or { IsCompleted: true })
-                        {
-                            if (App.ArcadeShineSystemList.Count == 0)
-                            {
-                                _currentSystemIndex = 0;
-                            }
-                            else
-                            {
-                                if (_currentSystemIndex == App.ArcadeShineSystemList.Count - 1)
-                                {
-                                    _currentSystemIndex = 0;
-                                }
-                                else
-                                {
-                                    _currentSystemIndex++;
-                                }
-                            }
-
-                            UpdateCategory();
-                            _nextCategoryAnimationTask = LaunchNextCategoryAnimations();
-                            _ = _nextCategoryAnimationTask.ContinueWith(_ => UpdateGame());
-                        }
+                        OnNavigateRightInputAction();
                         break;
                     case InputActionEnum.SelectAction:
-                        if (!ExitConfirmationPanel.IsVisible)
-                        {
-                            LaunchCurrentSelectedGame();
-                        }
-                        else
-                        {
-                            ShutdownArcadeShineFrontend();
-                        }
+                        OnSelectInputAction();
                         break;
                     case InputActionEnum.BackAction:
-                        if (ExitConfirmationPanel.IsVisible)
-                        {
-                            CloseExitConfirmationPopup();
-                        }
+                        OnBackInputAction();
                         break;
                     case InputActionEnum.ExitAction:
-                        if(!ExitConfirmationPanel.IsVisible)
-                        {
-                            OpenExitConfirmationPopup();
-                        }
-                        else
-                        {
-                            CloseExitConfirmationPopup();
-                        }
+                        OnExitInputAction();
                         break;
                 }
             }
+        }
+    }
+
+    private void OnExitInputAction()
+    {
+        if (!ExitConfirmationPanel.IsVisible)
+        {
+            OpenExitConfirmationPopup();
+        }
+        else
+        {
+            CloseExitConfirmationPopup();
+        }
+    }
+
+    private void OnBackInputAction()
+    {
+        if (ExitConfirmationPanel.IsVisible)
+        {
+            CloseExitConfirmationPopup();
+        }
+    }
+
+    private void OnSelectInputAction()
+    {
+        if (!ExitConfirmationPanel.IsVisible)
+        {
+            LaunchCurrentSelectedGame();
+        }
+        else
+        {
+            ShutdownArcadeShineFrontend();
+        }
+    }
+
+    private void OnNavigateRightInputAction()
+    {
+        if (_nextCategoryAnimationTask is null or { IsCompleted: true })
+        {
+            if (App.ArcadeShineSystemList.Count == 0)
+            {
+                _currentSystemIndex = 0;
+            }
+            else
+            {
+                if (_currentSystemIndex == App.ArcadeShineSystemList.Count - 1)
+                {
+                    _currentSystemIndex = 0;
+                }
+                else
+                {
+                    _currentSystemIndex++;
+                }
+            }
+
+            UpdateCategory();
+            _nextCategoryAnimationTask = LaunchNextCategoryAnimations();
+            _ = _nextCategoryAnimationTask.ContinueWith(_ => UpdateGame());
+        }
+    }
+
+    private void OnNavigateLeftInputAction()
+    {
+        if (_previousCategoryAnimationTask is null or { IsCompleted: true })
+        {
+            if (App.ArcadeShineSystemList.Count == 0)
+            {
+                _currentSystemIndex = 0;
+            }
+            else
+            {
+                if (_currentSystemIndex == 0)
+                {
+                    _currentSystemIndex = App.ArcadeShineSystemList.Count - 1;
+                }
+                else
+                {
+                    _currentSystemIndex--;
+                }
+            }
+
+            UpdateCategory();
+            _previousCategoryAnimationTask = LaunchPreviousCategoryAnimations();
+            _ = _previousCategoryAnimationTask.ContinueWith(_ => UpdateGame());
+        }
+    }
+
+    private void OnNavigateDownInputAction()
+    {
+        if (_nextGameAnimationTask is null or { IsCompleted: true })
+        {
+            if (_currentCategoryGames.Count == 0)
+            {
+                _currentGameIndex = 0;
+            }
+            else
+            {
+                if (_currentGameIndex == _currentCategoryGames.Count - 1)
+                {
+                    _currentGameIndex = 0;
+                }
+                else
+                {
+                    _currentGameIndex++;
+                }
+            }
+
+            UpdateGame();
+            _nextGameAnimationTask = LaunchNextGameAnimations();
+        }
+    }
+
+    private void OnNavigateUpInputAction()
+    {
+        if (_previousGameAnimationTask is null or { IsCompleted: true })
+        {
+            if (_currentCategoryGames.Count == 0)
+            {
+                _currentGameIndex = 0;
+            }
+            else
+            {
+                if (_currentGameIndex == 0)
+                {
+                    _currentGameIndex = _currentCategoryGames.Count - 1;
+                }
+                else
+                {
+                    _currentGameIndex--;
+                }
+            }
+
+            UpdateGame();
+            _previousGameAnimationTask = LaunchPreviousGameAnimations();
         }
     }
 
@@ -388,11 +487,31 @@ public partial class MainWindow : Window
         
             await Task.Delay(TimeSpan.FromSeconds(0.5));
         
+            if (App.ArcadeShineSystemList[_currentSystemIndex].SystemExecutable.Contains("steam.exe"))
+            {
+                
+            }
+            
             // Create a new process
             Process process = new Process();
             // Set the process start info
             process.StartInfo.FileName = App.ArcadeShineSystemList[_currentSystemIndex].SystemExecutable; // specify the command to run
-            var arguments = App.ArcadeShineSystemList[_currentSystemIndex].SystemExecutableArguments.Replace("{GAME_FILE}", _currentCategoryGames[_currentGameIndex].GameRomFile);
+            string gameFile;
+            string steamGameProcessName = string.Empty;
+            bool isSteamGame = false;
+            if (App.ArcadeShineSystemList[_currentSystemIndex].SystemExecutable.Contains("steam.exe"))
+            {
+                isSteamGame = true;
+                var steamGameRomFiles = _currentCategoryGames[_currentGameIndex].GameRomFile.Split('|');
+                gameFile = steamGameRomFiles[0];
+                steamGameProcessName = steamGameRomFiles[1].Replace(".exe", "");
+            }
+            else
+            {
+                gameFile = _currentCategoryGames[_currentGameIndex].GameRomFile;
+            }
+            var arguments = App.ArcadeShineSystemList[_currentSystemIndex].SystemExecutableArguments
+                .Replace("{GAME_FILE}", gameFile);
             process.StartInfo.Arguments = arguments; // specify the arguments
             // Set additional process start info as necessary
             process.StartInfo.UseShellExecute = false;
@@ -402,6 +521,18 @@ public partial class MainWindow : Window
             process.Start();
             // Wait for the process to exit
             await process.WaitForExitAsync();
+
+            if (isSteamGame)
+            {
+                Process? steamGameProcess;
+                do
+                {
+                    steamGameProcess = Process.GetProcessesByName(steamGameProcessName).FirstOrDefault();
+                } while (steamGameProcess == null);
+
+                await steamGameProcess.WaitForExitAsync();
+            }
+            
             Dispatcher.UIThread.Invoke(() =>
             {
                 LoadingPanel.IsVisible = false;
@@ -504,7 +635,7 @@ public partial class MainWindow : Window
         Bitmap gameBackground = new Bitmap(_currentCategoryGames[_currentGameIndex].GameBackgroundPicture);
         Dispatcher.UIThread.Invoke(() =>
         {
-            GameTitleIndexCountTextBlock.Text = $"{Lang.Resources.TitleNumber} {_currentGameIndex + 1} / {_currentCategoryGames.Count}    {Lang.Resources.TitleCount} {App.ArcadeShineGameList.Count}";
+            GameTitleIndexCountTextBlock.Text = $"{Lang.Resources.TitleNumber} {_currentGameIndex + 1} / {_currentCategoryGames.Count}  -  {Lang.Resources.TitleCount} {App.ArcadeShineGameList.Count}";
             CurrentGameLogoImage.Source = currentGameLogo;
             NextGameLogoImage.Source = nextGameLogo;
             PreviousGameLogoImage.Source = previousGameLogo;
