@@ -22,9 +22,19 @@ using SDL2;
 
 namespace ArcadeShine.Frontend;
 
+#if WINDOWS
+[Flags]
+public enum EXECUTION_STATE : uint
+{
+    ES_SYSTEM_REQUIRED = 0x00000001,
+    ES_DISPLAY_REQUIRED = 0x00000002,
+    ES_CONTINUOUS = 0x80000000
+}
+#endif
+
 public partial class MainWindow : Window
 {
-    private readonly LibVLC _libVlc = new LibVLC();
+    private readonly LibVLC _libVlc = new ();
 
     private int _currentSystemIndex;
 
@@ -32,7 +42,7 @@ public partial class MainWindow : Window
 
     private List<ArcadeShineGame> _currentCategoryGames = null!;
 
-    private readonly Dictionary<InputActionEnum, Key> _inputActionMap = new Dictionary<InputActionEnum, Key>();
+    private readonly Dictionary<InputActionEnum, Key> _inputActionMap = new ();
     
     private Animation _animationCurrentSystemDisappearToLeftSide = null!;
     private Animation _animationNextSystemLogoAppearFromRightSide = null!;
@@ -63,10 +73,24 @@ public partial class MainWindow : Window
 #if WINDOWS
     [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
+    static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
+    
+    [DllImport("user32.dll")]
+    static extern bool SetForegroundWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+    const int SW_RESTORE = 9;
+    const int SW_MINIMIZE = 6;
 #endif
     
-    private IntPtr _gameControllerHandle;
-    private System.Timers.Timer gamepadPollTimer;
+    private readonly System.Timers.Timer _gamepadPollTimer;
+    
+    private bool _specialButtonDown = false;
+
+    private Process? _runningGameProcess;
+    private Process? _runningSteamGameProcess;
     
     public MainWindow()
     {
@@ -116,25 +140,26 @@ public partial class MainWindow : Window
             throw new Exception("SDL2.SDL.SDL_Init(SDL2.SDL.SDL_INIT_GAMECONTROLLER) failed");
         }
 
-        for (int i = 0 ; i < SDL.SDL_NumJoysticks() ; i++)
+        for (var i = 0 ; i < SDL.SDL_NumJoysticks() ; i++)
         {
             if (SDL.SDL_IsGameController(i) == SDL.SDL_bool.SDL_TRUE)
             {
-                _gameControllerHandle = SDL.SDL_GameControllerOpen(i);
+                SDL.SDL_GameControllerOpen(i);
             }
         }
-        gamepadPollTimer = new System.Timers.Timer(16); // 60Hz polling
-        gamepadPollTimer.Elapsed += (s, e) =>
-        {
-            if(!_isInGame)
-                ProcessLastGamepadButtonsPressed();
+        _gamepadPollTimer = new System.Timers.Timer(16); // 60Hz polling
+        _gamepadPollTimer.Elapsed += (s, e) =>
+        { 
+            ProcessLastGamepadButtonsPressed();
         };
-        gamepadPollTimer.Start();
+        _gamepadPollTimer.Start();
 
         if (App.ArcadeShineFrontendSettings.AllowInactivityMode)
             _autoSelectRandomGameTimer = DispatcherTimer.RunOnce(SelectRandomGame,
                 TimeSpan.FromSeconds(App.ArcadeShineFrontendSettings.SecondsBeforeRandomGameSelectionInactivityMode));
     }
+    
+    private SDL.SDL_GameControllerButton _previousPollGamepadButton = SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID;
     
     private void ProcessLastGamepadButtonsPressed()
     {
@@ -142,39 +167,70 @@ public partial class MainWindow : Window
         switch (sdlEvent.type)
         {
             case SDL.SDL_EventType.SDL_CONTROLLERBUTTONDOWN:
+                _previousPollGamepadButton = (SDL.SDL_GameControllerButton)sdlEvent.cbutton.button;
                 Dispatcher.UIThread.Invoke(() =>
                 {
                     if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_UP)
                     {
-                        OnNavigateUpInputAction();
+                        if(!_isInGame)
+                            OnNavigateUpInputAction();
                     }
                     if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_DOWN)
                     {
-                        OnNavigateDownInputAction();
+                        if(!_isInGame)
+                            OnNavigateDownInputAction();
                     }
                     if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_LEFT)
                     {
-                        OnNavigateLeftInputAction();
+                        if(!_isInGame)
+                            OnNavigateLeftInputAction();
                     }
                     if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_RIGHT)
                     {
-                        OnNavigateRightInputAction();
+                        if(!_isInGame)
+                            OnNavigateRightInputAction();
                     }
                     if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_A)
                     {
-                        OnSelectInputAction();
+                        if(!_isInGame)
+                            OnSelectInputAction();
                     }
                     if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_B)
                     {
-                        OnBackInputAction();
+                        if(!_isInGame)
+                            OnBackInputAction();
                     }
-                    if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_BACK)
+                    if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_GUIDE)
                     {
-                        OnExitInputAction();
+                        if(!_isInGame)
+                            OnExitInputAction();
+                    }
+
+                    if (_isInGame)
+                    {
+                        if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_GUIDE)
+                        {
+                            _specialButtonDown = true;
+                        }
+                        else if (_specialButtonDown && sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_BACK)
+                        {
+                            KillRunningGame();
+                        }
                     }
                 });
-                break;
+                return;
+            
+            case SDL.SDL_EventType.SDL_CONTROLLERBUTTONUP:
+                if (_isInGame)
+                {
+                    if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_BACK)
+                    {
+                        _specialButtonDown = false;
+                    }
+                }
+                return;
         }
+        _previousPollGamepadButton = SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID;
     }
 
     private async void SelectRandomGame()
@@ -487,16 +543,11 @@ public partial class MainWindow : Window
             });
         
             await Task.Delay(TimeSpan.FromSeconds(0.5));
-        
-            if (App.ArcadeShineSystemList[_currentSystemIndex].SystemExecutable.Contains("steam.exe"))
-            {
-                
-            }
             
             // Create a new process
-            Process process = new Process();
+            _runningGameProcess = new Process();
             // Set the process start info
-            process.StartInfo.FileName = App.ArcadeShineSystemList[_currentSystemIndex].SystemExecutable; // specify the command to run
+            _runningGameProcess.StartInfo.FileName = App.ArcadeShineSystemList[_currentSystemIndex].SystemExecutable; // specify the command to run
             string gameFile;
             string steamGameProcessName = string.Empty;
             bool isSteamGame = false;
@@ -513,25 +564,32 @@ public partial class MainWindow : Window
             }
             var arguments = App.ArcadeShineSystemList[_currentSystemIndex].SystemExecutableArguments
                 .Replace("{GAME_FILE}", gameFile);
-            process.StartInfo.Arguments = arguments; // specify the arguments
+            _runningGameProcess.StartInfo.Arguments = arguments; // specify the arguments
             // Set additional process start info as necessary
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.CreateNoWindow = true;
-            process.StartInfo.RedirectStandardOutput = true;
+            _runningGameProcess.StartInfo.UseShellExecute = false;
+            _runningGameProcess.StartInfo.CreateNoWindow = true;
+            _runningGameProcess.StartInfo.RedirectStandardOutput = true;
             // Start the process
-            process.Start();
-            // Wait for the process to exit
-            await process.WaitForExitAsync();
+            _runningGameProcess.Start();
+
+            if (!isSteamGame)
+            {
+                BringProcessWindowToFront(_runningGameProcess);
+                await _runningGameProcess.WaitForExitAsync();
+            }
 
             if (isSteamGame)
             {
-                Process? steamGameProcess;
+                _runningSteamGameProcess =  null;
                 do
                 {
-                    steamGameProcess = Process.GetProcessesByName(steamGameProcessName).FirstOrDefault();
-                } while (steamGameProcess == null);
+                    ReduceProcessWindow(_runningGameProcess);
+                    _runningSteamGameProcess = Process.GetProcessesByName(steamGameProcessName).FirstOrDefault();
+                } while (_runningSteamGameProcess == null);
 
-                await steamGameProcess.WaitForExitAsync();
+                BringProcessWindowToFront(_runningSteamGameProcess);
+                
+                await _runningSteamGameProcess.WaitForExitAsync();
             }
             
             Dispatcher.UIThread.Invoke(() =>
@@ -544,6 +602,8 @@ public partial class MainWindow : Window
                 FadePanel.Opacity = 0.0;
                 VideoView.IsVisible = true;
             });
+            _runningSteamGameProcess =  null;
+            _runningGameProcess =  null;
             _isInGame = false;
             ThreadPool.QueueUserWorkItem(_ => VideoView.MediaPlayer?.Play(_currentVideoMedia));
             _autoSelectRandomGameTimer = DispatcherTimer.RunOnce(SelectRandomGame,
@@ -553,6 +613,32 @@ public partial class MainWindow : Window
         {
             // ignored
         }
+    }
+
+    private void KillRunningGame()
+    {
+        if (!_isInGame) return;
+        _runningSteamGameProcess?.Kill(true);
+        _runningGameProcess?.Kill(true);
+    }
+
+    private void ReduceProcessWindow(Process process)
+    {
+#if WINDOWS
+        ShowWindow(process.MainWindowHandle, SW_MINIMIZE);
+#elif LINUX
+        Process.Start("xdotool", $"search --pid {process.Id} windowminimize");
+#endif
+    }
+    
+    private void BringProcessWindowToFront(Process process)
+    {
+#if WINDOWS
+        ShowWindow(process.MainWindowHandle, SW_RESTORE);
+        SetForegroundWindow(process.MainWindowHandle);
+#elif LINUX
+        Process.Start("xdotool", $"search --pid {process.Id} windowactivate");
+#endif
     }
 
     private async Task LaunchNextCategoryAnimations()
