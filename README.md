@@ -3,7 +3,7 @@
 
 This project is a cross-platform software I developed for my own arcade cabinet. I decided to share my work under a GNU GPL v3 licence.
 
-This project includes two main softwares, an arcade cabinet frontend and an arcade game library/launcher manager. The project aims to be compatible with any king of game systems (Native executable game or emulators). It works under Windows and Linux OS (Tested on Windows 10/11 and Fedora 42). In theory it can also runs on MacOS but I can't test it.
+This project includes two main softwares, an arcade cabinet frontend and an arcade game library/launcher manager. The project aims to be compatible with any king of game systems (Native executable game or emulators). It works under Windows and Linux OS (Tested on Windows 10/11 and Fedora 42/43). In theory it can also runs on MacOS but I can't test it.
 
 Arcade Shine frontend and Arcade Shine Manager are developped with [.NET 8](https://github.com/dotnet/sdk), [Avalonia UI](https://avaloniaui.net/) and [LibVLCSharp](https://code.videolan.org/videolan/LibVLCSharp)
 
