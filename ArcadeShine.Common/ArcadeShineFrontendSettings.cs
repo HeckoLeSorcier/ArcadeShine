@@ -39,6 +39,8 @@ public class ArcadeShineFrontendSettings
     
     public bool AllowWindowsToManageScreenSleep { get; set; } = false;
 
+    public int SecondsBeforeShutdownScreen { get; set; } = 600;
+
     public static ArcadeShineFrontendSettings Load()
     {
         if (!File.Exists("ArcadeShineFrontendSettings.json"))

@@ -43,14 +43,20 @@
                               IsCheckedChanged="AllowRandomGameSelectionCheckBox_OnIsCheckedChanged"/> 
                 </DockPanel>
                 <DockPanel Margin="10" IsEnabled="{Binding #AllowRandomGameSelectionCheckBox.IsChecked}">
-                    <TextBlock Text="Inactivity delay in seconds:" VerticalAlignment="Center"/>
+                    <TextBlock Text="Random game selection delay:" VerticalAlignment="Center"/>
                     <TextBox MinWidth="150" x:Name="SecondsBeforeRandomGameSelectionTextBox" 
                               Margin="15 0" TextChanged="SecondsBeforeRandomGameSelectionTextBox_OnTextChanged"
-                              HorizontalAlignment="Right"/>
+                              HorizontalAlignment="Right" InnerRightContent="seconds"/>
                 </DockPanel>
                 <DockPanel Margin="10">
-                    <CheckBox x:Name="AllowWindowsToManageScreenSleepCheckBox" Content="Allow Windows OS to manage screen sleep"
+                    <CheckBox x:Name="AllowWindowsToManageScreenSleepCheckBox" Content="Allow OS to manage screen sleep"
                               IsCheckedChanged="AllowWindowsToManageScreenSleepCheckBox_OnIsCheckedChanged"/> 
+                </DockPanel>
+                <DockPanel Margin="10" x:Name="ScreenSleepDelaySetting">
+                    <TextBlock Text="Screen sleep delay:" VerticalAlignment="Center"/>
+                    <TextBox MinWidth="150" x:Name="DelayToShutdownScreenTextBox" 
+                             Margin="15 0" TextChanged="DelayToShutdownScreen_OnTextChanged"
+                             HorizontalAlignment="Right" InnerRightContent="seconds"/>
                 </DockPanel>
             </StackPanel>
         </DockPanel>

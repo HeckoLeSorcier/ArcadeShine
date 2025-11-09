@@ -32,17 +32,17 @@
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Top" VerticalAlignment="Stretch" Orientation="Vertical">
                     <DockPanel Margin="10" HorizontalAlignment="Stretch">
-                        <TextBlock Text="Game display name:" VerticalAlignment="Center" Width="220" />
-                        <TextBox x:Name="GameDisplayNameTextBox" DockPanel.Dock="Right"
-                                 Margin="15 0" 
-                                 HorizontalAlignment="Stretch"/>
+                        <TextBlock Text="Game logo:" VerticalAlignment="Top" Width="220" />
+                        <TextBox x:Name="GameLogoFilename" Text="" IsVisible="False"/>
+                        <Button DockPanel.Dock="Right" HorizontalAlignment="Left"
+                                Margin="15 0" Click="PickGameLogoButton_OnClick"
+                                Height="100" Width="100">
+                            <Image Height="100" Width="100" x:Name="GameLogoImage" />
+                        </Button>
                     </DockPanel>
                     <DockPanel Margin="10" HorizontalAlignment="Stretch">
-                        <TextBlock Text="Game ROM filename:" VerticalAlignment="Center" Width="220" />
-                        <Button Content="Browse" HorizontalAlignment="Right" DockPanel.Dock="Right"
-                                Margin="0 0 15 0" Click="BrowseRomFileButton_OnClick"/>
-                        <TextBox x:Name="GameRomFileTextBox"
-                                 AcceptsReturn="False" AcceptsTab="False" DockPanel.Dock="Right"
+                        <TextBlock Text="Game display name:" VerticalAlignment="Center" Width="220" />
+                        <TextBox x:Name="GameDisplayNameTextBox" DockPanel.Dock="Right"
                                  Margin="15 0" 
                                  HorizontalAlignment="Stretch"/>
                     </DockPanel>
@@ -66,18 +66,29 @@
                         </ComboBox>
                     </DockPanel>
                     <DockPanel Margin="10" HorizontalAlignment="Stretch">
-                        <TextBlock Text="Game logo:" VerticalAlignment="Top" Width="220" />
-                        <TextBox x:Name="GameLogoFilename" Text="" IsVisible="False"/>
-                        <Button DockPanel.Dock="Right" HorizontalAlignment="Right"
-                                Margin="15 0" Click="PickGameLogoButton_OnClick"
-                                Height="100" Width="100">
-                            <Image Height="100" Width="100" x:Name="GameLogoImage" />
-                        </Button>
+                        <TextBlock Text="Game args:" VerticalAlignment="Center" Width="220" />
+                        <Button Content="Browse" HorizontalAlignment="Right" DockPanel.Dock="Right"
+                                Margin="0 0 15 0" Click="BrowseRomFileButton_OnClick"/>
+                        <TextBox x:Name="GameRomFileTextBox"
+                                 AcceptsReturn="False" AcceptsTab="False" DockPanel.Dock="Right"
+                                 Margin="15 0" 
+                                 UseFloatingWatermark="True"
+                                 Watermark="ROM file or game specific arguments (Steam AppID, RiotClientServices game id, etc...)"
+                                 HorizontalAlignment="Stretch"/>
+                    </DockPanel>
+                    <DockPanel x:Name="SpecificProcessNameSetting" Margin="10" HorizontalAlignment="Stretch">
+                        <TextBlock Text="Process name to watch:" VerticalAlignment="Center" Width="220" />
+                        <TextBox x:Name="SpecificGameProcessNameTextBox"
+                                 DockPanel.Dock="Right"
+                                 Margin="15 0" 
+                                 UseFloatingWatermark="True"
+                                 Watermark="Process name to detect running state"
+                                 HorizontalAlignment="Stretch"/>
                     </DockPanel>
                     <DockPanel Margin="10" HorizontalAlignment="Stretch">
                         <TextBlock Text="Game background:" VerticalAlignment="Top" Width="220" />
                         <TextBox x:Name="GameBackgroundFilename" Text="" IsVisible="False"/>
-                        <Button DockPanel.Dock="Right" HorizontalAlignment="Right"
+                        <Button DockPanel.Dock="Right" HorizontalAlignment="Left"
                                 Margin="15 0" Click="PickGameBackgroundButton_OnClick"
                                 Height="100" Width="100">
                             <Image Height="100" Width="100" x:Name="GameBackgroundImage" />

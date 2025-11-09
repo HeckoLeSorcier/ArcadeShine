@@ -284,9 +284,9 @@
                     </Image.Styles>
                 </Image>
                 <StackPanel Background="Transparent" Orientation="Vertical"
-                            VerticalAlignment="Top">
-                    <Image Height="192" x:Name="PreviousGameLogoImage"
-                           Opacity="0.0" Margin="0 -96 0 0">
+                            VerticalAlignment="Top" Margin="40">
+                    <Image Height="112" x:Name="PreviousGameLogoImage"
+                           Opacity="0.0" Margin="40 -16 40 0">
                         <Image.Effect>
                             <DropShadowEffect OffsetX="0"
                                               OffsetY="0"
@@ -294,7 +294,7 @@
                                               Opacity="0.5"/>
                         </Image.Effect>
                     </Image>
-                    <Image Height="192" x:Name="CurrentGameLogoImage">
+                    <Image Height="112" Margin="40 0" x:Name="CurrentGameLogoImage">
                         <Image.Effect>
                             <DropShadowEffect OffsetX="0"
                                               OffsetY="0"
@@ -302,8 +302,8 @@
                                               Opacity="0.5"/>
                         </Image.Effect>
                     </Image>
-                    <Image Height="192" x:Name="NextGameLogoImage"
-                           Opacity="0.0">
+                    <Image Height="112" x:Name="NextGameLogoImage"
+                           Opacity="0.0" Margin="40 0">
                         <Image.Effect>
                             <DropShadowEffect OffsetX="0"
                                               OffsetY="0"
@@ -314,7 +314,7 @@
                 </StackPanel>
                 <TextBlock VerticalAlignment="Bottom" x:Name="GameDescriptionTextBlock"
                            Height="340"
-                           Margin="55 770 55 25"
+                           Margin="55 25 55 0"
                            TextWrapping="Wrap"
                            TextAlignment="Left"
                            FontSize="28">
@@ -327,8 +327,11 @@
                     </TextBlock.Effect>
                 </TextBlock>
             </Grid>
-            <DockPanel Grid.Column="0" Grid.Row="1" VerticalAlignment="Stretch">
-                <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical" HorizontalAlignment="Left" Margin="60 15 0 0">
+            <avalonia:VideoView x:Name="VideoView" IsVisible="False" DockPanel.Dock="Top" 
+                                Margin="40 56 0 55" VerticalAlignment="Stretch"
+                                Grid.Column="0" Grid.Row="1" >
+                <StackPanel x:Name="GameInfosVideoOverlay" Orientation="Vertical" VerticalAlignment="Bottom" HorizontalAlignment="Left" 
+                            Margin="25 0 0 25">
                     <TextBlock x:Name="GameNameTextBlock" FontSize="28">
                         <TextBlock.Effect>
                             <DropShadowEffect Color="Black"
@@ -377,8 +380,7 @@
                         </TextBlock>
                     </StackPanel>
                 </StackPanel>
-                <avalonia:VideoView x:Name="VideoView" DockPanel.Dock="Top" Margin="84 40" VerticalAlignment="Stretch"/>
-            </DockPanel>
+            </avalonia:VideoView>
         </Grid>
         <Panel x:Name="FadePanel" Background="Black" Opacity="0" ZIndex="5"/>
         <Panel x:Name="LoadingPanel" Background="Black" IsVisible="False" ZIndex="10">

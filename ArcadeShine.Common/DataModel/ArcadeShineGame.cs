@@ -7,7 +7,7 @@ namespace ArcadeShine.Common.DataModel;
 
 public class ArcadeShineGame
 {
-    public string GameRomFile { get; set; } = "";
+    public string GameProcessArgs { get; set; } = "";
     
     public string GameName { get; set; } = "";
     
@@ -28,4 +28,5 @@ public class ArcadeShineGame
     public string GameVideo { get; set; } = "";
     
     public string GameVideoAspectRatio { get; set; } = "";
+    public string GameProcessNameToWatch { get; set; } = "";
 }

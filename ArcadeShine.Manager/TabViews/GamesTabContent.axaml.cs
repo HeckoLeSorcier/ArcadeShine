@@ -77,7 +77,10 @@ public partial class GamesTabContent : UserControl
         GameDetailPanel.IsVisible = true;
         GameSystemComboBox.ItemsSource = App.ArcadeShineSystemList;
         GameDisplayNameTextBox.Text = game.GameName;
-        GameRomFileTextBox.Text = game.GameRomFile;
+        GameRomFileTextBox.Text = game.GameProcessArgs;
+        SpecificProcessNameSetting.IsVisible = App.ArcadeShineSystemList
+            .First(s => s.SystemIdentifier == game.GameSystem).SystemIsGameLauncher;
+        SpecificGameProcessNameTextBox.Text = game.GameProcessNameToWatch;
         GameShortDescTextBox.Text = game.GameDescription;
         GameDeveloperTextBox.Text = game.GameDeveloper;
         GameReleaseYearTextBox.Text = game.GameReleaseYear;
@@ -126,18 +129,20 @@ public partial class GamesTabContent : UserControl
     private void ResetGameDetails()
     {
         GameSystemComboBox.ItemsSource = null;
-        GameDisplayNameTextBox.Text = String.Empty;
-        GameRomFileTextBox.Text = String.Empty;
-        GameShortDescTextBox.Text = String.Empty;
-        GameDeveloperTextBox.Text = String.Empty;
-        GameReleaseYearTextBox.Text = String.Empty;
-        GameGenresTextBox.Text = String.Empty;
+        SpecificProcessNameSetting.IsVisible = false;
+        SpecificGameProcessNameTextBox.Text = string.Empty;
+        GameDisplayNameTextBox.Text = string.Empty;
+        GameRomFileTextBox.Text = string.Empty;
+        GameShortDescTextBox.Text = string.Empty;
+        GameDeveloperTextBox.Text = string.Empty;
+        GameReleaseYearTextBox.Text = string.Empty;
+        GameGenresTextBox.Text = string.Empty;
         GameVideoAspectRatioComboBox.SelectedIndex = 0;
-        GameLogoFilename.Text = String.Empty;
+        GameLogoFilename.Text = string.Empty;
         GameLogoImage.Source = null;
-        GameBackgroundFilename.Text = String.Empty;
+        GameBackgroundFilename.Text = string.Empty;
         GameBackgroundImage.Source = null;
-        GameVideoTextBox.Text = String.Empty;
+        GameVideoTextBox.Text = string.Empty;
     }
     
     private void RedrawGameListBox()
@@ -160,7 +165,8 @@ public partial class GamesTabContent : UserControl
     private void SaveGameListFile()
     {
         _selectedGame.GameName = GameDisplayNameTextBox.Text!;
-        _selectedGame.GameRomFile = GameRomFileTextBox.Text!;
+        _selectedGame.GameProcessArgs = GameRomFileTextBox.Text!;
+        _selectedGame.GameProcessNameToWatch = SpecificGameProcessNameTextBox.Text!;
         _selectedGame.GameDescription = GameShortDescTextBox.Text!;
         if(GameSystemComboBox.ItemCount > 0 && GameSystemComboBox.SelectedIndex >= 0)
             _selectedGame.GameSystem = ((ArcadeShineSystem)GameSystemComboBox.SelectedValue).SystemIdentifier;

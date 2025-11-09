@@ -16,4 +16,6 @@ public class ArcadeShineSystem
     public string SystemExecutableArguments { get; set; } = "-f -g \"{GAME_FILE}\"";
     
     public string SystemLogo { get; set; } = "GameSystemLogo.png";
+
+    public bool SystemIsGameLauncher { get; set; } = false;
 }

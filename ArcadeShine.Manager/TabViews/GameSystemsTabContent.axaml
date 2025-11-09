@@ -34,6 +34,15 @@
             </StackPanel>
             <StackPanel DockPanel.Dock="Top" VerticalAlignment="Stretch" Orientation="Vertical">
                 <DockPanel Margin="10" HorizontalAlignment="Stretch">
+                    <TextBlock Text="System logo:" VerticalAlignment="Center" Width="220" />
+                    <TextBox x:Name="SystemLogoFilename" Text="" IsVisible="False"/>
+                    <Button DockPanel.Dock="Right" HorizontalAlignment="Left"
+                            Margin="15 0" Click="PickSystemLogoButton_OnClick"
+                            Height="100" Width="100">
+                        <Image Height="100" Width="100" x:Name="SystemLogoImage" />
+                    </Button>
+                </DockPanel>
+                <DockPanel Margin="10" HorizontalAlignment="Stretch">
                     <TextBlock Text="System display name:" VerticalAlignment="Center" Width="220" />
                     <TextBox x:Name="SystemDisplayNameTextBox" DockPanel.Dock="Right"
                              Margin="15 0" 
@@ -61,13 +70,8 @@
                              HorizontalAlignment="Stretch"/>
                 </DockPanel>
                 <DockPanel Margin="10" HorizontalAlignment="Stretch">
-                    <TextBlock Text="System logo:" VerticalAlignment="Center" Width="220" />
-                    <TextBox x:Name="SystemLogoFilename" Text="" IsVisible="False"/>
-                    <Button DockPanel.Dock="Right" HorizontalAlignment="Right"
-                            Margin="15 0" Click="PickSystemLogoButton_OnClick"
-                            Height="100" Width="100">
-                        <Image Height="100" Width="100" x:Name="SystemLogoImage" />
-                    </Button>
+                    <CheckBox x:Name="SystemIsGameLauncherCheckBox" 
+                              Content="Check if this system is a game launcher (ex: Steam, Riot Games, etc...)"/> 
                 </DockPanel>
             </StackPanel>
         </DockPanel>

@@ -61,6 +61,7 @@ public partial class FrontendSettingsTabContent : UserControl
         AllowRandomGameSelectionCheckBox.IsChecked = App.ArcadeShineFrontendSettings.AllowInactivityMode;
         SecondsBeforeRandomGameSelectionTextBox.Text = App.ArcadeShineFrontendSettings.SecondsBeforeRandomGameSelectionInactivityMode.ToString();
         AllowWindowsToManageScreenSleepCheckBox.IsChecked = App.ArcadeShineFrontendSettings.AllowWindowsToManageScreenSleep;
+        DelayToShutdownScreenTextBox.Text = App.ArcadeShineFrontendSettings.SecondsBeforeShutdownScreen.ToString();
     }
     
     private void OnChangeFrontedLanguage(object? sender, SelectionChangedEventArgs e)
@@ -173,6 +174,18 @@ public partial class FrontendSettingsTabContent : UserControl
     {
         var checkBox = sender as CheckBox;
         App.ArcadeShineFrontendSettings.AllowWindowsToManageScreenSleep = checkBox.IsChecked ?? false;
+        ScreenSleepDelaySetting.IsEnabled = !App.ArcadeShineFrontendSettings.AllowWindowsToManageScreenSleep;
+        ArcadeShineFrontendSettings.Save(App.ArcadeShineFrontendSettings);
+    }
+
+    private void DelayToShutdownScreen_OnTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        var textBox = sender as TextBox;
+        if (!int.TryParse(textBox.Text, out var seconds))
+        {
+            return;
+        }
+        App.ArcadeShineFrontendSettings.SecondsBeforeShutdownScreen = seconds;
         ArcadeShineFrontendSettings.Save(App.ArcadeShineFrontendSettings);
     }
 }

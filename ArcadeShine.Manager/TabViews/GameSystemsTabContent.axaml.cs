@@ -50,6 +50,7 @@ public partial class GameSystemsTabContent : UserControl
         SystemExecutableArgumentsTextBox.Text = String.Empty;
         SystemLogoFilename.Text = String.Empty;
         SystemLogoImage.Source = null;
+        SystemIsGameLauncherCheckBox.IsChecked = false;
     }
     
     private void LoadGameSystemUi(ArcadeShineSystem system)
@@ -59,6 +60,7 @@ public partial class GameSystemsTabContent : UserControl
         SystemIdentifierTextBox.Text = system.SystemIdentifier;
         SystemExecutableTextBox.Text = system.SystemExecutable;
         SystemExecutableArgumentsTextBox.Text = system.SystemExecutableArguments;
+        SystemIsGameLauncherCheckBox.IsChecked = system.SystemIsGameLauncher;
         try
         {
             SystemLogoFilename.Text = system.SystemLogo;
@@ -122,6 +124,7 @@ public partial class GameSystemsTabContent : UserControl
         system.SystemExecutable = SystemExecutableTextBox.Text!;
         system.SystemExecutableArguments = SystemExecutableArgumentsTextBox.Text!;
         system.SystemLogo = SystemLogoFilename.Text!;
+        system.SystemIsGameLauncher = SystemIsGameLauncherCheckBox.IsChecked ?? false;
         _mainWindow.PreviousSelectedSystemIndex = GameSystemListBox.SelectedIndex;
         ArcadeShineSystemList.Save(App.ArcadeShineFrontendSettings.GameLibraryPath, App.ArcadeShineSystemList);
         RedrawGameSystemListBox();

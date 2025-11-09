@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
@@ -15,18 +15,18 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="11.3.1" />
-        <PackageReference Include="Avalonia.Desktop" Version="11.3.1" />
-        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.1" />
-        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.1" />
+        <PackageReference Include="Avalonia" Version="11.3.8" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.3.8" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.8" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.8" />
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-        <PackageReference Include="Avalonia.Diagnostics" Version="11.3.1">
+        <PackageReference Include="Avalonia.Diagnostics" Version="11.3.8">
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="LibVLCSharp" Version="3.9.3" />
-        <PackageReference Include="LibVLCSharp.Avalonia" Version="3.9.3" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="LibVLCSharp" Version="3.9.4" />
+        <PackageReference Include="LibVLCSharp.Avalonia" Version="3.9.4" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageReference Include="ppy.SDL2-CS" Version="1.0.82" />
         <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.21" />
     </ItemGroup>
