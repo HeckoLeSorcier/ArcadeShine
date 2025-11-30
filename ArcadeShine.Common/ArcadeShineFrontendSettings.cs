@@ -37,7 +37,7 @@ public class ArcadeShineFrontendSettings
     
     public int SecondsBeforeRandomGameSelectionInactivityMode { get; set; } = 300;
     
-    public bool AllowWindowsToManageScreenSleep { get; set; } = false;
+    public bool AllowScreenSleep { get; set; } = false;
 
     public int SecondsBeforeShutdownScreen { get; set; } = 600;
 

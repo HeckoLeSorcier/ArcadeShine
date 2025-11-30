@@ -18,4 +18,6 @@ public class ArcadeShineSystem
     public string SystemLogo { get; set; } = "GameSystemLogo.png";
 
     public bool SystemIsGameLauncher { get; set; } = false;
+    
+    public bool ExitLauncherOnGameExit { get; set; } = false;
 }

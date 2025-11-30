@@ -1,4 +1,4 @@
-﻿// ArcadeShineGame.cs
+// ArcadeShineGame.cs
 // 
 // Author: Hecko @ Silversoft
 // Created at: 06/08/2025
@@ -28,5 +28,8 @@ public class ArcadeShineGame
     public string GameVideo { get; set; } = "";
     
     public string GameVideoAspectRatio { get; set; } = "";
+    
     public string GameProcessNameToWatch { get; set; } = "";
+    
+    public double GamePlayedTime { get; set; } = 0;
 }

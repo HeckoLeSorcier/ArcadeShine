@@ -60,7 +60,7 @@ public partial class FrontendSettingsTabContent : UserControl
         ExitGameButton.Content = App.ArcadeShineFrontendSettings.ExitKey;
         AllowRandomGameSelectionCheckBox.IsChecked = App.ArcadeShineFrontendSettings.AllowInactivityMode;
         SecondsBeforeRandomGameSelectionTextBox.Text = App.ArcadeShineFrontendSettings.SecondsBeforeRandomGameSelectionInactivityMode.ToString();
-        AllowWindowsToManageScreenSleepCheckBox.IsChecked = App.ArcadeShineFrontendSettings.AllowWindowsToManageScreenSleep;
+        AllowScreenSleepCheckBox.IsChecked = App.ArcadeShineFrontendSettings.AllowScreenSleep;
         DelayToShutdownScreenTextBox.Text = App.ArcadeShineFrontendSettings.SecondsBeforeShutdownScreen.ToString();
     }
     
@@ -170,11 +170,11 @@ public partial class FrontendSettingsTabContent : UserControl
         ArcadeShineFrontendSettings.Save(App.ArcadeShineFrontendSettings);
     }
 
-    private void AllowWindowsToManageScreenSleepCheckBox_OnIsCheckedChanged(object? sender, RoutedEventArgs e)
+    private void AllowScreenSleepCheckBox_OnIsCheckedChanged(object? sender, RoutedEventArgs e)
     {
         var checkBox = sender as CheckBox;
-        App.ArcadeShineFrontendSettings.AllowWindowsToManageScreenSleep = checkBox.IsChecked ?? false;
-        ScreenSleepDelaySetting.IsEnabled = !App.ArcadeShineFrontendSettings.AllowWindowsToManageScreenSleep;
+        App.ArcadeShineFrontendSettings.AllowScreenSleep = checkBox.IsChecked ?? false;
+        ScreenSleepDelaySetting.IsEnabled = App.ArcadeShineFrontendSettings.AllowScreenSleep;
         ArcadeShineFrontendSettings.Save(App.ArcadeShineFrontendSettings);
     }
 

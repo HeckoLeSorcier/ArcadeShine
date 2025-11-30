@@ -30,4 +30,16 @@
     <data name="TitleNumber" xml:space="preserve">
         <value>Title n°</value>
     </data>
+    <data name="GamePlayedTimeNever" xml:space="preserve">
+        <value>Never played</value>
+    </data>
+    <data name="GamePlayedTimeHours" xml:space="preserve">
+        <value>hours</value>
+    </data>
+    <data name="GamePlayedTimeMinutes" xml:space="preserve">
+        <value>minutes</value>
+    </data>
+    <data name="LoadingGame" xml:space="preserve">
+        <value>Loading...</value>
+    </data>
 </root>

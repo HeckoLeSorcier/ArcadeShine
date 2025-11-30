@@ -49,8 +49,8 @@
                               HorizontalAlignment="Right" InnerRightContent="seconds"/>
                 </DockPanel>
                 <DockPanel Margin="10">
-                    <CheckBox x:Name="AllowWindowsToManageScreenSleepCheckBox" Content="Allow OS to manage screen sleep"
-                              IsCheckedChanged="AllowWindowsToManageScreenSleepCheckBox_OnIsCheckedChanged"/> 
+                    <CheckBox x:Name="AllowScreenSleepCheckBox" Content="Allow screen sleep"
+                              IsCheckedChanged="AllowScreenSleepCheckBox_OnIsCheckedChanged"/> 
                 </DockPanel>
                 <DockPanel Margin="10" x:Name="ScreenSleepDelaySetting">
                     <TextBlock Text="Screen sleep delay:" VerticalAlignment="Center"/>

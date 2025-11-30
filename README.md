@@ -7,6 +7,11 @@ This project includes two main softwares, an arcade cabinet frontend and an arca
 
 Arcade Shine frontend and Arcade Shine Manager are developped with [.NET 8](https://github.com/dotnet/sdk), [Avalonia UI](https://avaloniaui.net/) and [LibVLCSharp](https://code.videolan.org/videolan/LibVLCSharp)
 
+## Linux dependencies
+
+Fedora 42+:
+- vlc-devel
+
 ## Screenshots
 
 ### Manager screen

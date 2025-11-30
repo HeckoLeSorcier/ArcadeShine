@@ -73,6 +73,10 @@
                     <CheckBox x:Name="SystemIsGameLauncherCheckBox" 
                               Content="Check if this system is a game launcher (ex: Steam, Riot Games, etc...)"/> 
                 </DockPanel>
+                <DockPanel Margin="10" HorizontalAlignment="Stretch">
+                    <CheckBox x:Name="SystemExitLauncherOnGameExitCheckBox" 
+                              Content="Exit launcher on game exit"/> 
+                </DockPanel>
             </StackPanel>
         </DockPanel>
     </Grid>

@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Runtime.InteropServices;
 using ArcadeShine.Common;
 using ArcadeShine.Common.DataModel;
 using Avalonia;
@@ -16,6 +17,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using LibVLCSharp.Shared;
@@ -23,19 +25,9 @@ using SDL2;
 
 namespace ArcadeShine.Frontend;
 
-#if WINDOWS
-[Flags]
-public enum EXECUTION_STATE : uint
-{
-    ES_SYSTEM_REQUIRED = 0x00000001,
-    ES_DISPLAY_REQUIRED = 0x00000002,
-    ES_CONTINUOUS = 0x80000000
-}
-#endif
-
 public partial class MainWindow : Window
 {
-    private readonly LibVLC _libVlc = new ();
+    private readonly LibVLC _libVlc = new ("--mouse-hide-timeout=0");
 
     private int _currentSystemIndex;
 
@@ -69,40 +61,47 @@ public partial class MainWindow : Window
     private bool _isRandomizingGameSelection;
     private bool _cancelRandomGameSelection;
 
-    private IDisposable _screenSleepTimer = null;
+    private IDisposable _screenSleepTimer = null!;
     private bool _isScreenSleeping;
+    private bool _isCancellingScreenSleeping;
     
     private bool _isInGame;
-    
-#if WINDOWS
-    [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
-    static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
     
     [DllImport("user32.dll")]
     static extern bool SetForegroundWindow(IntPtr hWnd);
 
     [DllImport("user32.dll")]
     static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+    
+    [DllImport("user32.dll", EntryPoint = "SetSystemCursor")]
+    private static extern bool SetSystemCursor(IntPtr hCursor, uint id);
+
+    [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
+    private static extern bool SystemParametersInfo(uint action, uint param, IntPtr vparam, uint init);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "LoadCursorFromFileW")]
+    private static extern IntPtr LoadCursorFromFile(string fileName);
+
+    private const uint SPI_SETCURSORS = 0x0057;
+    private const uint SPIF_UPDATEINIFILE = 0x01;
+    private const uint SPIF_SENDCHANGE = 0x02;
+    // IDs for system cursors
+    private const uint OCR_NORMAL = 32512; // Default arrow cursor
+    private const uint OCR_WAIT = 32514; // Loading (hourglass/spinner)
+    private const uint OCR_APPSTARTING = 32650; // Arrow + spinner (busy while app starting)
 
     const int SW_RESTORE = 9;
     const int SW_MINIMIZE = 6;
     
-    private const int HWND_BROADCAST = 0xFFFF;
-    private const int WM_SYSCOMMAND = 0x0112;
-    private const int SC_MONITORPOWER = 0xF170;
-    private const int MONITOR_OFF = 2;
+    private readonly string? _currentLinuxDesktopEnv;
 
-    [DllImport("user32.dll")]
-    static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
-#endif
-    
     private readonly System.Timers.Timer _gamepadPollTimer;
     
     private bool _specialButtonDown = false;
 
     private Process? _runningGameSystemProcess;
     private Process? _runningLauncherGameProcess;
+    private TimeSpan _currentGameDuration;
     
     public MainWindow()
     {
@@ -144,8 +143,65 @@ public partial class MainWindow : Window
 
         Loaded += OnLoaded;
         KeyDown += OnKeyDown;
+        Closed += OnWindowClosed;
         ConfirmExitFrontendButton.Click += ConfirmExitFrontendButton_OnClick;
         CancelExitFrontendButton.Click += CancelExitFrontendButton_OnClick;
+
+        if (OperatingSystem.IsLinux())
+        {
+            _currentLinuxDesktopEnv = Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP");
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            // Attempt to load a Windows cursor (.cur or .ani) from Assets and set it as the system arrow cursor.
+            // This changes the system cursor globally until restored; ensure this is desired.
+            IntPtr customCursorHandle = IntPtr.Zero;
+            string? tempPath = null;
+            try
+            {
+                // Prefer a .cur asset if available
+                Uri? assetUri = null;
+                if (AssetLoader.Exists(new Uri("avares://ArcadeShine.Frontend/Assets/BlackDOT.cur")))
+                    assetUri = new Uri("avares://ArcadeShine.Frontend/Assets/BlackDOT.cur");
+
+                if (assetUri != null)
+                {
+                    using var stream = AssetLoader.Open(assetUri);
+                    using var ms = new MemoryStream();
+                    stream.CopyTo(ms);
+                    var bytes = ms.ToArray();
+
+                    tempPath = Path.Combine(Path.GetTempPath(), "arcadeshine_cursor.cur");
+                    File.WriteAllBytes(tempPath, bytes);
+
+                    customCursorHandle = LoadCursorFromFile(tempPath);
+                }
+            }
+            catch
+            {
+                // Ignore and leave customCursorHandle as zero (no change will be applied)
+            }
+            finally
+            {
+                try
+                {
+                    if (!string.IsNullOrEmpty(tempPath) && File.Exists(tempPath))
+                        File.Delete(tempPath);
+                }
+                catch { /* ignore */ }
+            }
+
+            if (customCursorHandle != IntPtr.Zero)
+            {
+                // Ensure defaults are loaded first, then override OCR_NORMAL with our custom cursor
+                SystemParametersInfo(SPI_SETCURSORS, 0, IntPtr.Zero, 0);
+                SetSystemCursor(customCursorHandle, OCR_NORMAL);
+                // Also override common loading/busy cursors with the same temporary cursor
+                SetSystemCursor(customCursorHandle, OCR_WAIT);
+                SetSystemCursor(customCursorHandle, OCR_APPSTARTING);
+            }
+        }
 
         if (SDL.SDL_Init(SDL.SDL_INIT_GAMECONTROLLER) != 0)
         {
@@ -170,12 +226,30 @@ public partial class MainWindow : Window
             _autoSelectRandomGameTimer = DispatcherTimer.RunOnce(SelectRandomGame,
                 TimeSpan.FromSeconds(App.ArcadeShineFrontendSettings.SecondsBeforeRandomGameSelectionInactivityMode));
 
-        if (!App.ArcadeShineFrontendSettings.AllowWindowsToManageScreenSleep)
+        if (App.ArcadeShineFrontendSettings.AllowScreenSleep)
             _screenSleepTimer = DispatcherTimer.RunOnce(TriggerScreenSleep,
                 TimeSpan.FromSeconds(App.ArcadeShineFrontendSettings.SecondsBeforeShutdownScreen));
     }
-    
-    private SDL.SDL_GameControllerButton _previousPollGamepadButton = SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID;
+
+    private void OnWindowClosed(object? sender, EventArgs e)
+    {
+        // Ensure we restore the default system cursor on Windows when the window is closed
+        RestoreSystemCursorsToDefault();
+    }
+
+    private void RestoreSystemCursorsToDefault()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        try
+        {
+            // Reload system cursors from defaults and broadcast the change
+            SystemParametersInfo(SPI_SETCURSORS, 0, IntPtr.Zero, SPIF_SENDCHANGE | SPIF_UPDATEINIFILE);
+        }
+        catch
+        {
+            // ignore
+        }
+    }
     
     private void ProcessLastGamepadButtonsPressed()
     {
@@ -191,26 +265,25 @@ public partial class MainWindow : Window
             case SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN:
             case SDL.SDL_EventType.SDL_MOUSEMOTION:
             case SDL.SDL_EventType.SDL_MOUSEWHEEL:
-                if (_isScreenSleeping)
+                if (_isScreenSleeping && !_isCancellingScreenSleeping)
                 {
-                    _isScreenSleeping = false;
-                    CancelScreenSleepTimer();
+                    _isCancellingScreenSleeping = true;
+                    Dispatcher.UIThread.Invoke(CancelScreenSleepTimer);
                     return;
                 }
-                CancelScreenSleepTimer();
                 ResetRandomGameSelectionTimer();
+                ResetSleepScreenTimer();
                 break;
             
             case SDL.SDL_EventType.SDL_CONTROLLERBUTTONDOWN:
-                if (_isScreenSleeping)
+                if (_isScreenSleeping && !_isCancellingScreenSleeping)
                 {
-                    _isScreenSleeping = false;
-                    CancelScreenSleepTimer();
+                    _isCancellingScreenSleeping = true;
+                    Dispatcher.UIThread.Invoke(CancelScreenSleepTimer);
                     return;
                 }
-                CancelScreenSleepTimer();
                 ResetRandomGameSelectionTimer();
-                _previousPollGamepadButton = (SDL.SDL_GameControllerButton)sdlEvent.cbutton.button;
+                ResetSleepScreenTimer();
                 Dispatcher.UIThread.Invoke(() =>
                 {
                     if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_UP)
@@ -243,19 +316,14 @@ public partial class MainWindow : Window
                         if(!_isInGame)
                             OnBackInputAction();
                     }
-                    if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_GUIDE)
-                    {
-                        if(!_isInGame)
-                            OnExitInputAction();
-                    }
 
                     if (_isInGame)
                     {
-                        if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_GUIDE)
+                        if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_LEFTSTICK)
                         {
                             _specialButtonDown = true;
                         }
-                        else if (_specialButtonDown && sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_BACK)
+                        else if (_specialButtonDown && sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_RIGHTSTICK)
                         {
                             KillRunningGame();
                         }
@@ -264,16 +332,13 @@ public partial class MainWindow : Window
                 return;
             
             case SDL.SDL_EventType.SDL_CONTROLLERBUTTONUP:
-                if (_isInGame)
+                if (!_isInGame) return;
+                if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_LEFTSTICK)
                 {
-                    if (sdlEvent.cbutton.button == (byte)SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_BACK)
-                    {
-                        _specialButtonDown = false;
-                    }
+                    _specialButtonDown = false;
                 }
                 return;
         }
-        _previousPollGamepadButton = SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID;
     }
 
     private async void SelectRandomGame()
@@ -380,8 +445,13 @@ public partial class MainWindow : Window
     {
         if (_inputActionMap.ContainsValue(e.Key))
         {
-            CancelScreenSleepTimer();
+            if (_isScreenSleeping && !_isCancellingScreenSleeping)
+            {
+                _isCancellingScreenSleeping = true;
+                Dispatcher.UIThread.Invoke(CancelScreenSleepTimer);
+            }
             ResetRandomGameSelectionTimer();
+            ResetSleepScreenTimer();
             InputActionEnum? action = null;
             foreach (var kvp in _inputActionMap)
             {
@@ -433,6 +503,17 @@ public partial class MainWindow : Window
         {
             _cancelRandomGameSelection = true;
         }
+    }
+    
+    private void ResetSleepScreenTimer()
+    {
+        _screenSleepTimer?.Dispose();
+        
+        if (!App.ArcadeShineFrontendSettings.AllowScreenSleep) return;
+        
+        _screenSleepTimer = DispatcherTimer.RunOnce(TriggerScreenSleep,
+            TimeSpan.FromSeconds(App.ArcadeShineFrontendSettings.SecondsBeforeShutdownScreen));
+        
     }
 
     private void OnExitInputAction()
@@ -577,6 +658,7 @@ public partial class MainWindow : Window
             PauseVideo();
             CancelVideoPlay();
             _autoSelectRandomGameTimer.Dispose();
+            _screenSleepTimer.Dispose();
             Dispatcher.UIThread.Invoke(() =>
             {
                 VideoView.IsVisible = false;
@@ -617,6 +699,8 @@ public partial class MainWindow : Window
             // Start the process
             _runningGameSystemProcess.Start();
 
+            var startGameTime = DateTime.Now;
+            
             if (!isLauncherGame)
             {
                 BringProcessWindowToFront(_runningGameSystemProcess);
@@ -625,16 +709,33 @@ public partial class MainWindow : Window
             else
             {
                 _runningLauncherGameProcess =  null;
+                var loadingError = false;
                 do
                 {
                     ReduceProcessWindow(_runningGameSystemProcess);
                     _runningLauncherGameProcess = Process.GetProcessesByName(gameProcessNameToWatch).FirstOrDefault();
+                    if (TimeSpan.FromSeconds(40) < DateTime.Now - startGameTime)
+                    {
+                        await KillRunningGame();
+                        loadingError = true;
+                        break;
+                    }
+                    await Task.Delay(TimeSpan.FromMilliseconds(100));
                 } while (_runningLauncherGameProcess == null);
-
-                BringProcessWindowToFront(_runningLauncherGameProcess);
                 
-                await _runningLauncherGameProcess.WaitForExitAsync();
+                if (!loadingError && _runningLauncherGameProcess is { HasExited: false })
+                {
+                    BringProcessWindowToFront(_runningLauncherGameProcess);
+
+                    await _runningLauncherGameProcess.WaitForExitAsync();
+                }
             }
+            if(App.ArcadeShineSystemList[_currentSystemIndex].ExitLauncherOnGameExit)
+                await KillRunningGame();
+            var endGameTime = DateTime.Now;
+            _currentGameDuration = endGameTime - startGameTime;
+            _currentCategoryGames[_currentGameIndex].GamePlayedTime += _currentGameDuration.TotalSeconds;
+            ArcadeShineGameList.Save(App.ArcadeShineFrontendSettings.GameLibraryPath, App.ArcadeShineGameList);
             
             Dispatcher.UIThread.Invoke(() =>
             {
@@ -649,8 +750,9 @@ public partial class MainWindow : Window
             _runningLauncherGameProcess =  null;
             _isInGame = false;
             ThreadPool.QueueUserWorkItem(_ => VideoView.MediaPlayer?.Play(_currentVideoMedia));
-            _autoSelectRandomGameTimer = DispatcherTimer.RunOnce(SelectRandomGame,
-                TimeSpan.FromSeconds(App.ArcadeShineFrontendSettings.SecondsBeforeRandomGameSelectionInactivityMode));
+            _currentGameDuration = TimeSpan.Zero;
+            ResetRandomGameSelectionTimer();
+            ResetSleepScreenTimer();
         }
         catch (Exception)
         {
@@ -658,30 +760,75 @@ public partial class MainWindow : Window
         }
     }
 
-    private void KillRunningGame()
+    private async Task KillRunningGame()
     {
         if (!_isInGame) return;
-        _runningLauncherGameProcess?.Kill(true);
-        _runningGameSystemProcess?.Kill(true);
+        try
+        {
+            if (OperatingSystem.IsLinux())
+            {
+                await Task.Delay(TimeSpan.FromSeconds(0.5));
+                _runningLauncherGameProcess?.Close();
+                await Task.Delay(TimeSpan.FromSeconds(0.5));
+                _runningLauncherGameProcess?.Kill(true);
+                await Task.Delay(TimeSpan.FromSeconds(0.5));
+                _runningGameSystemProcess?.Close();
+                await Task.Delay(TimeSpan.FromSeconds(0.5));
+                _runningGameSystemProcess?.Kill(true);
+            }
+            else if (OperatingSystem.IsWindows())
+            {
+                if (_runningLauncherGameProcess is { HasExited: false })
+                {
+                    await Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "taskkill",
+                        Arguments = $"/im {_runningLauncherGameProcess.ProcessName}.exe /f /t",
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    }).WaitForExitAsync();
+                }
+                if (_runningGameSystemProcess is { HasExited: false })
+                {
+                    await Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "taskkill",
+                        Arguments = $"/im {_runningGameSystemProcess.ProcessName}.exe /f /t",
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    }).WaitForExitAsync();
+                }
+            }
+        }
+        catch
+        {
+            // ignored
+        }
     }
 
     private void ReduceProcessWindow(Process process)
     {
-#if WINDOWS
-        ShowWindow(process.MainWindowHandle, SW_MINIMIZE);
-#else
-        Process.Start("xdotool", $"search --pid {process.Id} windowminimize");
-#endif
+        if (OperatingSystem.IsLinux())
+        {
+            Process.Start("xdotool", $"search --pid {process.Id} windowminimize");
+        }
+        else if (OperatingSystem.IsWindows())
+        {
+            ShowWindow(process.MainWindowHandle, SW_MINIMIZE);
+        }
     }
     
     private void BringProcessWindowToFront(Process process)
     {
-#if WINDOWS
-        ShowWindow(process.MainWindowHandle, SW_RESTORE);
-        SetForegroundWindow(process.MainWindowHandle);
-#else
-        Process.Start("xdotool", $"search --pid {process.Id} windowactivate");
-#endif
+        if (OperatingSystem.IsLinux())
+        {
+            Process.Start("xdotool", $"search --pid {process.Id} windowactivate");
+        }
+        else if (OperatingSystem.IsWindows())
+        {
+            ShowWindow(process.MainWindowHandle, SW_RESTORE);
+            SetForegroundWindow(process.MainWindowHandle);
+        }
     }
 
     private async Task LaunchNextCategoryAnimations()
@@ -768,6 +915,7 @@ public partial class MainWindow : Window
             GameTitleIndexCountTextBlock.Text =
                 $"{Lang.Resources.TitleNumber} {_currentGameIndex + 1} / {_currentCategoryGames.Count}  -  {Lang.Resources.TitleCount} {App.ArcadeShineGameList.Count}";
             CurrentGameLogoImage.Source = currentGameLogo;
+            CurrentLoadingGameLogoImage.Source = currentGameLogo;
             NextGameLogoImage.Source = nextGameLogo;
             PreviousGameLogoImage.Source = previousGameLogo;
             GameBackground.Source = gameBackground;
@@ -777,6 +925,22 @@ public partial class MainWindow : Window
             GameDeveloperTextBlock.Text = _currentCategoryGames[_currentGameIndex].GameDeveloper;
             GameYearTextBlock.Text = _currentCategoryGames[_currentGameIndex].GameReleaseYear;
             GameNameTextBlock.Text = _currentCategoryGames[_currentGameIndex].GameName;
+            var gamePlayedTime = TimeSpan.FromSeconds(_currentCategoryGames[_currentGameIndex].GamePlayedTime);
+            var playedTimeText = Lang.Resources.GamePlayedTimeNever;
+            if (gamePlayedTime.TotalSeconds > 0)
+            {
+                playedTimeText = string.Empty;
+                if (Math.Round(gamePlayedTime.TotalHours) > 0)
+                {
+                    playedTimeText = $"{Math.Round(gamePlayedTime.TotalHours)} {Lang.Resources.GamePlayedTimeHours}";
+                    playedTimeText += $" {Math.Round(gamePlayedTime.TotalMinutes % 60)} {Lang.Resources.GamePlayedTimeMinutes}";
+                }
+                else
+                {
+                    playedTimeText = $"{Math.Round(gamePlayedTime.TotalMinutes)} {Lang.Resources.GamePlayedTimeMinutes}";
+                }
+            }
+            GamePlayedTimeTextBlock.Text = playedTimeText;
             if(!Design.IsDesignMode)
                 Task.Delay(TimeSpan.FromSeconds(1)).ContinueWith(_ => Play());
         });
@@ -785,9 +949,6 @@ public partial class MainWindow : Window
     private void OnLoaded(object? sender, RoutedEventArgs e)
     {
         GenerateAnimations();
-#if WINDOWS
-        SetThreadExecutionState(ES_CONTINUOUS);
-#endif
     }
 
     private void GenerateAnimations()
@@ -973,18 +1134,24 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (VideoView.MediaPlayer is { IsPlaying: true })
+        Dispatcher.UIThread.Invoke(() =>
         {
-            VideoView.MediaPlayer.Stop();
-            VideoView.IsVisible = false;
-            GameInfosVideoOverlay.IsVisible = false;
-        }
-        VideoView.MediaPlayer = new MediaPlayer(_libVlc);
-        VideoView.MediaPlayer.CropGeometry = _currentCategoryGames[_currentGameIndex].GameVideoAspectRatio;
-        VideoView.MediaPlayer.EnableHardwareDecoding = true;
-        VideoView.MediaPlayer.Playing += MediaPlayerOnPlaying;
-        VideoView.MediaPlayer.EndReached += MediaPlayerOnEndReached;
-        PlayCurrentGameVideo();
+            if (VideoView.MediaPlayer is { IsPlaying: true })
+            {
+                VideoView.MediaPlayer.Stop();
+                VideoView.IsVisible = false;
+                GameInfosVideoOverlay.IsVisible = false;
+            }
+            
+            VideoView.MediaPlayer = new MediaPlayer(_libVlc);
+            VideoView.MediaPlayer.EnableMouseInput = false;
+            VideoView.Cursor = new Cursor(StandardCursorType.None);
+            VideoView.MediaPlayer.CropGeometry = _currentCategoryGames[_currentGameIndex].GameVideoAspectRatio;
+            VideoView.MediaPlayer.EnableHardwareDecoding = true;
+            VideoView.MediaPlayer.Playing += MediaPlayerOnPlaying;
+            VideoView.MediaPlayer.EndReached += MediaPlayerOnEndReached;
+            PlayCurrentGameVideo();
+        });
     }
 
     private void MediaPlayerOnPlaying(object? sender, EventArgs e)
@@ -1070,6 +1237,8 @@ public partial class MainWindow : Window
     {
         Dispatcher.UIThread.Invoke(() =>
         {
+            // Before shutting down, make sure to restore system cursors on Windows
+            RestoreSystemCursorsToDefault();
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 desktop.Shutdown();
@@ -1085,23 +1254,53 @@ public partial class MainWindow : Window
         }
     }
 
-    private void TriggerScreenSleep()
+    private async void TriggerScreenSleep()
     {
+        if (!App.ArcadeShineFrontendSettings.AllowScreenSleep || _isInGame) return;
         _isScreenSleeping = true;
-#if WINDOWS
-        // Trigger screen sleep
-        SendMessage((IntPtr)HWND_BROADCAST, WM_SYSCOMMAND, (IntPtr)SC_MONITORPOWER, (IntPtr)MONITOR_OFF);  
-#else
-        Process.Start("busctl", "--user set-property org.gnome.Mutter.DisplayConfig /org/gnome/Mutter/DisplayConfig org.gnome.Mutter.DisplayConfig PowerSaveMode i 3");
-#endif
+        PauseVideo();
+        CancelVideoPlay();
+        _autoSelectRandomGameTimer.Dispose();
+        _screenSleepTimer.Dispose();
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            VideoView.IsVisible = false;
+            GameInfosVideoOverlay.IsVisible = false;
+            FadePanel.Opacity = 1.0;
+        });
+        await _globalFadeOutAnimation.RunAsync(FadePanel);
+
+        if (OperatingSystem.IsLinux())
+        {
+            switch (_currentLinuxDesktopEnv)
+            {
+                case "GNOME":
+                    Process.Start("busctl",
+                        "--user set-property org.gnome.Mutter.DisplayConfig /org/gnome/Mutter/DisplayConfig org.gnome.Mutter.DisplayConfig PowerSaveMode i 3");
+                    break;
+                case "KDE":
+                    Process.Start("dbus-send",
+                        "--session --print-reply --dest=org.kde.kglobalaccel /component/org_kde_powerdevil org.kde.kglobalaccel.Component.invokeShortcut string:\"Turn Off Screen\"");
+                    break;
+            }
+        }
     }
     
-    private void CancelScreenSleepTimer()
+    private async void CancelScreenSleepTimer()
     {
-        if (App.ArcadeShineFrontendSettings.AllowWindowsToManageScreenSleep) return;
+        if(!App.ArcadeShineFrontendSettings.AllowScreenSleep || !_isScreenSleeping) return;
         
-        _screenSleepTimer.Dispose();
-        _screenSleepTimer = DispatcherTimer.RunOnce(TriggerScreenSleep,
-            TimeSpan.FromSeconds(App.ArcadeShineFrontendSettings.SecondsBeforeShutdownScreen));
+        await _globalFadeInAnimation.RunAsync(FadePanel);
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            FadePanel.Opacity = 0.0;
+        });
+        _runningGameSystemProcess =  null;
+        _runningLauncherGameProcess =  null;
+        ThreadPool.QueueUserWorkItem(_ => VideoView.MediaPlayer?.Play(_currentVideoMedia));
+        ResetRandomGameSelectionTimer();
+        ResetSleepScreenTimer();
+        _isScreenSleeping = false;
+        _isCancellingScreenSleeping = false;
     }
 }

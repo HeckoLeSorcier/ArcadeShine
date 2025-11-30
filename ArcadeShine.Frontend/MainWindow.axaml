@@ -312,20 +312,33 @@
                         </Image.Effect>
                     </Image>
                 </StackPanel>
-                <TextBlock VerticalAlignment="Bottom" x:Name="GameDescriptionTextBlock"
-                           Height="340"
-                           Margin="55 25 55 0"
-                           TextWrapping="Wrap"
-                           TextAlignment="Left"
-                           FontSize="28">
-                    <TextBlock.Effect>
-                        <DropShadowEffect Color="Black"
-                                          Opacity="1"
-                                          BlurRadius="10"
-                                          OffsetX="0"
-                                          OffsetY="0" />
-                    </TextBlock.Effect>
-                </TextBlock>
+                <StackPanel Margin="55 25 55 0"
+                            VerticalAlignment="Bottom"
+                            Orientation="Vertical">
+                    <TextBlock VerticalAlignment="Bottom" x:Name="GameDescriptionTextBlock"
+                               Height="340"
+                               Margin="55 0 55 0"
+                               TextWrapping="Wrap"
+                               TextAlignment="Left"
+                               FontSize="28">
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="Black"
+                                              Opacity="1"
+                                              BlurRadius="10"
+                                              OffsetX="0"
+                                              OffsetY="0" />
+                        </TextBlock.Effect>
+                    </TextBlock>
+                    <StackPanel Orientation="Horizontal"
+                                Margin="55 5 55 0">
+                        <Image Source="../Assets/minuteur.png" Height="36" Width="36"/>
+                        <TextBlock x:Name="GamePlayedTimeTextBlock" 
+                                   Margin="10 0 0 0" 
+                                   VerticalAlignment="Center"
+                                   TextAlignment="Left"
+                                   FontSize="24"/>
+                    </StackPanel>
+                </StackPanel>
             </Grid>
             <avalonia:VideoView x:Name="VideoView" IsVisible="False" DockPanel.Dock="Top" 
                                 Margin="40 56 0 55" VerticalAlignment="Stretch"
@@ -384,23 +397,26 @@
         </Grid>
         <Panel x:Name="FadePanel" Background="Black" Opacity="0" ZIndex="5"/>
         <Panel x:Name="LoadingPanel" Background="Black" IsVisible="False" ZIndex="10">
-            <Image Source="/Assets/loading.png" HorizontalAlignment="Center" VerticalAlignment="Center"
-                   Height="128" Width="128">
-                <Image.Styles>
-                    <Style Selector="Image">
-                        <Style.Animations>
-                            <Animation Duration="0:0:1" IterationCount="Infinite">
-                                <KeyFrame Cue="0%">
-                                    <Setter Property="RotateTransform.Angle" Value="0"/>
-                                </KeyFrame>
-                                <KeyFrame Cue="100%">
-                                    <Setter Property="RotateTransform.Angle" Value="360"/>
-                                </KeyFrame>
-                            </Animation>
-                        </Style.Animations>
-                    </Style>
-                </Image.Styles>
-            </Image>
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Image Height="256" x:Name="CurrentLoadingGameLogoImage" Margin="75"/>
+                <Image Source="/Assets/loading.png" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Height="128" Width="128" >
+                    <Image.Styles>
+                        <Style Selector="Image">
+                            <Style.Animations>
+                                <Animation Duration="0:0:1" IterationCount="Infinite">
+                                    <KeyFrame Cue="0%">
+                                        <Setter Property="RotateTransform.Angle" Value="0"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="100%">
+                                        <Setter Property="RotateTransform.Angle" Value="360"/>
+                                    </KeyFrame>
+                                </Animation>
+                            </Style.Animations>
+                        </Style>
+                    </Image.Styles>
+                </Image>
+            </StackPanel>
         </Panel>
         <Panel x:Name="ExitConfirmationPanel" Background="Transparent" IsVisible="False" ZIndex="10"
                Height="260" Width="780">
